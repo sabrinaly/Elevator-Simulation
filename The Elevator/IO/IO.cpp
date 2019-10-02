@@ -31,5 +31,8 @@ int main()
 
 	pipe1.Write(&mystruct, sizeof(mystruct));
 
+	cout << "Press RETURN to end IO process\n";
+	getchar();
+
 	return 0;
 }

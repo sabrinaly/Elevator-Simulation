@@ -1,5 +1,5 @@
 #include "C:\RTExamples\rt.h"
-#include "C:\Users\Sabrina Ly\Documents\Year4\CPEN 333\CPEN333-The-Elevator\The Elevator\ElevatorData.h"
+#include <ElevatorData.h>
 
 struct	 mypipelinedata mystruct;
 
@@ -46,7 +46,7 @@ int main()
 
 	pipe1.Read(&mystruct, sizeof(mystruct));
 	cout << "Child Process read [" << mystruct.x << "," << mystruct.y << "] from Pipeline.....\n";
-	Sleep(2000);
+	//Sleep(2000);
 
 	p1.WaitForProcess();
 	p2.WaitForProcess();					

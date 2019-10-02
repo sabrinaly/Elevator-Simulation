@@ -1,5 +1,5 @@
 #include "C:\RTExamples\rt.h"
-#include "C:\Users\Sabrina Ly\Documents\Year4\CPEN 333\CPEN333-The-Elevator\The Elevator\ElevatorData.h"
+#include <ElevatorData.h>
 
 int main()
 {
@@ -19,6 +19,7 @@ int main()
 	for (int i = 0; i < 10; i++)
 		MyDataPool->floors[i] = i;
 
+	cout << "Press RETURN to end Elevator 1 process\n";
 	getchar();
 
 	return 0;
