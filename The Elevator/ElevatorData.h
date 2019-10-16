@@ -1,5 +1,12 @@
 // Names: Sabrina Ly & Raymond Chu
 // Student Numbers: 16997158 & 23248157
+
+#ifndef __ElevatorData__
+#define __ElevatorData__
+
+#include "C:\RTExamples\rt.h"
+#include <random>
+
 struct mydatapooldata
 {					// start of structure template
 	int floor;		// floor corresponding to lifts current position
@@ -15,9 +22,13 @@ struct mypipelinedata
 
 struct elevator_status
 {
-	int temp;
-}
+	int floor;		// floor corresponding to lifts current position
+	int direction;  // direction of travel of lift
+	int floors[10]; // an array representing the floors and whether requests are set
+};
 
+int stop; // for testing purposes
+int floors = 10;
 /* struct dispatcher_status
 {
 	int temp; // the data to be protected
@@ -66,3 +77,6 @@ CSemaphore cs4("CS4", 1, 1); // semaphore with initial value 1 and max value 1
 
 CRendezvous r1("StartRendezvous", 8);
 CRendezvous r2("EndRendezvous", 8);
+
+CMutex print("PrintMutex");
+#endif
