@@ -31,9 +31,6 @@
 *.out
 *.app
 **/Debug
-**/*.vcxproj
-**/*.vcxproj.filters
-**/*.vcxproj.user
 **/.vs
 **/*.sln
 
