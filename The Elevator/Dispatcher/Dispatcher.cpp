@@ -1,3 +1,5 @@
+// Names: Sabrina Ly & Raymond Chu
+// Student Numbers: 16997158 & 23248157
 #include "C:\RTExamples\rt.h"
 #include <ElevatorData.h>
 
@@ -25,6 +27,8 @@ int main()
 		ACTIVE
 	);
 
+	r1.Wait();
+
 	// Read from datapool
 	cout << "Dispather attempting to create/use the datapool.....\n";
 	CDataPool 		dp("ElevatorDataPool", sizeof(struct mydatapooldata));
@@ -47,6 +51,8 @@ int main()
 	pipe1.Read(&mystruct, sizeof(mystruct));
 	cout << "Child Process read [" << mystruct.x << "," << mystruct.y << "] from Pipeline.....\n";
 	//Sleep(2000);
+
+	r2.Wait();
 
 	p1.WaitForProcess();
 	p2.WaitForProcess();					

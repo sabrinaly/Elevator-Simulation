@@ -1,10 +1,13 @@
+// Names: Sabrina Ly & Raymond Chu
+// Student Numbers: 16997158 & 23248157
 #include "C:\RTExamples\rt.h"
-#include "C:\Users\Sabrina Ly\Documents\Year4\CPEN 333\CPEN333-The-Elevator\The Elevator\ElevatorData.h"
+#include <ElevatorData.h>
 
 struct	 mypipelinedata mystruct = { 2, 5.5 };
 
 int main()
 {
+	r1.Wait();
 	int i;
 
 	// Read from datapool
@@ -33,6 +36,8 @@ int main()
 
 	cout << "Press RETURN to end IO process\n";
 	getchar();
+
+	r2.Wait();
 
 	return 0;
 }
