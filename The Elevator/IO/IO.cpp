@@ -4,13 +4,15 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 
-struct mypipelinedata mystruct = {2, 5.5};
+pipeline_data passengerstruct;
+pipeline_data pipeline1struct;
 
 elevator_status E1_status;
 elevator_status E2_status;
 
-UINT __stdcall IOStatusElevator1(void *args) // thread function
+UINT __stdcall IOStatusElevator1(void *args)
 {
+	//Direction (up/down), General Status (in/out of service), Door Status (open/closed), Current Floor Number
 	ElevatorStatus Elevator1Status("Elevator1");
 	r1.Wait();
 	for (int i = 0; i < floors; i++)
@@ -26,7 +28,7 @@ UINT __stdcall IOStatusElevator1(void *args) // thread function
 	return 0;
 }
 
-UINT __stdcall IOStatusElevator2(void *args) // thread function
+UINT __stdcall IOStatusElevator2(void *args)
 {
 	ElevatorStatus Elevator2Status("Elevator2");
 	r1.Wait();
@@ -45,53 +47,66 @@ UINT __stdcall IOStatusElevator2(void *args) // thread function
 	return 0;
 }
 
+UINT __stdcall ReadPassengerPipeline(void* args)
+{
+	r1.Wait();
+	CPipe passengerPipe("PassengerPipeline", 1024);
+	CPipe pipe1("MyPipe", 1024);
+	while (1) {
+		passengerPipe.Read(&passengerstruct, sizeof(passengerstruct));
+		pipelineMutex.Wait();
+		pipe1.Write(&passengerstruct, sizeof(passengerstruct));
+		pipelineMutex.Signal();
+	}
+	r2.Wait();
+	return 0;
+}
+
 int main()
 {
 	CThread Elevator1(IOStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2(IOStatusElevator2, ACTIVE, NULL);
-
-	r1.Wait();
-	int i;
-
-	/* // Read from datapool
-	cout << "Dispather attempting to create/use the datapool.....\n";
-	CDataPool dp("ElevatorDataPool", sizeof(struct mydatapooldata));
-
-	struct mydatapooldata *MyDataPool = (struct mydatapooldata *)(dp.LinkDataPool());
-
-	cout << "Dispatcher linked to datapool at address : " << MyDataPool << ".....\n";
-
-	cout << "Child Read value for Floor = " << MyDataPool->floor << endl;
-	cout << "Child Read value for Direction = " << MyDataPool->direction << endl;
-
-	printf("Child Read values for floor array = ");
-	for (i = 0; i < 10; i++)
-		cout << MyDataPool->floors[i] << " "; */
-
-	// Write to pipeline
-	print.Wait();
-	cout << "Parent Process Creating the Pipeline.....\n";
-	print.Signal();
-
+	CThread Passenger(ReadPassengerPipeline, ACTIVE, NULL);
 	CPipe pipe1("MyPipe", 1024);
 
-	/* print.Wait();
-	cout << "Hit RETURN to Write the structure [" << mystruct.x << ", " << mystruct.y << "] to the pipeline.....\n";
-	print.Signal();
-	getchar(); */
+	r1.Wait();
 
-	pipe1.Write(&mystruct, sizeof(mystruct));
+	while (1) {
+		if (TEST_FOR_KEYBOARD()) {
+			//do we need to count how many passengers entered the elevator, to allow that many inside elevator commands?
 
-	print.Wait();
-	cout << "Press RETURN to end IO process\n";
-	print.Signal();
+			char input1 = _getch();
+			char input2 = _getch();
+			if (input1 == 'd' && input2 == '+') {}
+				// start active passengers
+			else if (input1 == 'd' && input2 == '-') {}
+				// end active passengers
+			else if (input1 == '+' && input2 == '1') {}
+				// elevator 1 fault cleared
+			else if (input1 == '-' && input2 == '1') {}
+				// elevator 1 fault occurred
+			else if (input1 == '+' && input2 == '2') {}
+				// elevator 2 fault cleared
+			else if (input1 == '-' && input2 == '2') {}
+				// elevator 2 fault occurred
+			else if (input1 == 'e' && input2 == 'e') {}
+				// elevators return to floor 0, open doors, end simulation 
+			else {
+				pipeline1struct = { input1, input2 };
+				pipelineMutex.Wait();
+				pipe1.Write(&pipeline1struct, sizeof(pipeline1struct));
+				pipelineMutex.Signal();
+			}
 
-	getchar();
+
+		}
+	}
 
 	r2.Wait();
 
 	Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
+	Passenger.WaitForThread();
 
 	return 0;
 }

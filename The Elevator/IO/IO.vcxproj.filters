@@ -29,5 +29,11 @@
     <ClInclude Include="..\ElevatorData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\ElevatorStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Passengers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

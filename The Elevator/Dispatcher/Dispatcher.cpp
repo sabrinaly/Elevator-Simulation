@@ -4,7 +4,7 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 
-struct mypipelinedata mystruct;
+pipeline_data mystruct;
 
 elevator_status E1_status;
 elevator_status E2_status;
@@ -49,19 +49,19 @@ int main()
 {
 	int i;
 
-	CProcess p1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
+	CProcess p1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
 				NORMAL_PRIORITY_CLASS,																											   // priority
 				OWN_WINDOW,																														   // process has its own window
 				ACTIVE																															   // process is active immediately
 	);
 
-	CProcess p2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
+	CProcess p2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
 				NORMAL_PRIORITY_CLASS,																											   // priority
 				OWN_WINDOW,																														   // process has its own window
 				ACTIVE																															   // process is active immediately
 	);
 
-	CProcess p3("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+	CProcess p3("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
 				NORMAL_PRIORITY_CLASS,																									   // priority
 				OWN_WINDOW,																												   // process has its own window
 				ACTIVE);
@@ -70,37 +70,50 @@ int main()
 	CThread Elevator2(DispatcherStatusElevator2, ACTIVE, NULL);
 
 	r1.Wait();
-	print.Wait();
-	cout << "all threads/processes arrived at end rendevous" << endl;
-	print.Signal();
+	CPipe pipe1("MyPipe", 1024); // pipeline from IO with keyboard commands
+	int Message = NULL;
+	int current_floor_input = NULL;
 
-	/* // Read from datapool
-	cout << "Dispather attempting to create/use the datapool.....\n";
-	CDataPool dp("ElevatorDataPool", sizeof(struct mydatapooldata));
+	while (1) {
+		pipe1.Read(&mystruct, sizeof(mystruct));
 
-	struct mydatapooldata *MyDataPool = (struct mydatapooldata *)(dp.LinkDataPool());
+		//Outside Elevator
+		if (mystruct.x == 'u') {
+			// need to handle if mystruct.y is not in range 0-9
+			current_floor_input = mystruct.y - '0';
+			Message = 10 + current_floor_input;	// 10-19 for up
 
-	cout << "Dispatcher linked to datapool at address : " << MyDataPool << ".....\n";
+			if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input > E2_status.floor && E1_status.floor > E2_status.floor)
+				p1.Post(Message);
+			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input > E2_status.floor && E1_status.floor < E2_status.floor)
+				p2.Post(Message);
+			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input < E2_status.floor)
+				p1.Post(Message);
+			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input < E1_status.floor && current_floor_input > E2_status.floor)
+				p2.Post(Message);
+		}
+		else if (mystruct.x == 'd') {
+			// need to handle if mystruct.y is not in range 0-9
+			current_floor_input = mystruct.y - '0';
+			Message = 20 + current_floor_input; // 20-29 for down
+		}
+		//Inside Elevator
+		else if (mystruct.x == '1' || mystruct.x == '2') {
+			// need to handle if mystruct.y is not in range 0-9
+			int elevator_num = mystruct.x - '0';
+			int target_floor = mystruct.y - '0';
+			if (mystruct.x == '1')
+				p1.Post(target_floor);
+			else
+				p2.Post(target_floor);
+		}
+		else {
+			// wrong command 
+		}
+	}
 
-	cout << "Child Read value for Floor = " << MyDataPool->floor << endl;
-	cout << "Child Read value for Direction = " << MyDataPool->direction << endl;
 
-	cout << "Child Read values for floor array = ";
-	for (i = 0; i < 10; i++)
-		cout << MyDataPool->floors[i] << " "; */
-
-	// Read from pipeline
-	CPipe pipe1("MyPipe", 1024);
-
-	pipe1.Read(&mystruct, sizeof(mystruct));
-	print.Wait();
-	cout << "Child Process read [" << mystruct.x << "," << mystruct.y << "] from Pipeline.....\n";
-	print.Signal();
-
-	Sleep(10000);
-	stop = 1;
 	r2.Wait();
-	cout << "all threads/processes arrived at end rendevous" << endl;
 
 	Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
