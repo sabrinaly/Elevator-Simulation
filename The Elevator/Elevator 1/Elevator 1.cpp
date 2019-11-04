@@ -3,7 +3,6 @@
 #include "C:\RTExamples\rt.h"
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
-#define UNINITIALIZED 99
 
 ElevatorStatus Elevator1Status("Elevator1");
 elevator_status status;
@@ -87,7 +86,6 @@ int main()
 
 	while (1)
 	{
-
 		/*********  ELEVATOR GOING UP  **********/
 
 		while (elevator_floor < last_requested_floor) //do we need to check for elevator_direction too??
@@ -96,10 +94,7 @@ int main()
 			{
 				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 1)
 				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
-				{
 					stopped_flag = 1;
-					//commands[i].valid = 0;
-				}
 			}
 			if (stopped_flag)
 			{
@@ -120,10 +115,7 @@ int main()
 			{
 				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 2)
 				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
-				{
 					stopped_flag = 1;
-					//commands[i].valid = 0;
-				}
 			}
 			if (stopped_flag)
 			{
@@ -152,7 +144,6 @@ int main()
 					// new last_request_floor will be set in the other thread
 					if ((elevator_direction && commands[i].command / 10) || (elevator_direction == 0 && commands[i].command / 10 == 2))
 					{
-						//commands[i].valid = 0;
 						passenger_waiting = SAME_DIR;
 						break;
 					}
@@ -173,7 +164,11 @@ int main()
 			int largest_age_index = 0;
 			if (passenger_waiting == NOONE)
 			{
-				open_door();
+				// opens door to let passengers out first 
+				if (elevator_direction)
+					stop_elevator(NOONE, EV_UP);
+				else
+					stop_elevator(NOONE, EV_DOWN);
 				//poll for new command
 				while (largest_age == 0)
 				{
@@ -185,37 +180,48 @@ int main()
 							largest_age_index = i;
 						}
 					}
-
-					//TODO: change so that door stays close in idle
 					// if largest age is 0, that means there are no valid commands in the list and elevator should be idle
-					// idle = last_requested_floor is elevator floor
 					// should it go back to middle floor?
 					if (largest_age != 0)
 					{
 						last_requested_floor = commands[largest_age_index].command % 10;
 						commands[largest_age_index].valid = 0;
-						// what if last_requested_floor == elevator_floor -> passenger will never request to go to same floor
 						if (last_requested_floor > elevator_floor)
 						{
 							elevator_direction = 1;
-							EV1_UP_SIGNAL();
-							Sleep(2000);
-							EV1_UP_RESET();
-							close_door();
 							Sleep(1000);
 							elevator_floor++;
 							update_status();
 						}
-						else
+						else if (last_requested_floor < elevator_floor)
 						{
 							elevator_direction = 0;
-							EV1_DW_SIGNAL();
-							Sleep(2000);
-							EV1_DW_RESET();
-							close_door();
 							Sleep(1000);
 							elevator_floor--;
 							update_status();
+						}
+						// what if last_requested_floor == elevator_floor 
+						// after a while, passenger arrives on the same floor
+						// open the door for them, then go to the direction they want 
+						else 
+						{
+							// passenger arrives on elevator's floor, presses up
+							if (commands[largest_age_index].command / 10) 
+							{
+								elevator_direction = 1;
+								stop_elevator(REQ_UP, EV_UP);
+								Sleep(1000);
+								elevator_floor++;
+								update_status();
+							}
+							else // command/10 == 2
+							{
+								elevator_direction = 0;
+								stop_elevator(REQ_DOWN, EV_DOWN);
+								Sleep(1000);
+								elevator_floor--;
+								update_status();
+							}
 						}
 					}
 				}
@@ -283,11 +289,22 @@ int main()
 //clears command that have been consumed (e.g passenger got off, passenger got on)
 void clear_command(int requested_direction)
 {
-	for (i = 0; i < COMMAND_SIZE; i++)
-	{
-		if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != requested_direction))
+	if (requested_direction == 0) {
+		for (int i = 0; i < COMMAND_SIZE; i++)
 		{
-			commands[i].valid = 0;
+			if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 == requested_direction))
+			{
+				commands[i].valid = 0;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < COMMAND_SIZE; i++)
+		{
+			if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != requested_direction))
+			{
+				commands[i].valid = 0;
+			}
 		}
 	}
 }
