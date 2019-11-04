@@ -19,7 +19,8 @@ UINT __stdcall DispatcherStatusElevator1(void *args) // thread function
 		print.Wait();
 		cout << "Dispatcher >>> elevator 1 status" << endl
 			 << "direction: " << E1_status.direction << endl
-			 << "floor: " << E1_status.floor << endl;
+			 << "floor: " << E1_status.floor << endl
+			 << "target floor: " << E1_status.target_floor << endl;
 		print.Signal();
 	}
 
@@ -37,7 +38,8 @@ UINT __stdcall DispatcherStatusElevator2(void *args) // thread function
 		print.Wait();
 		cout << "Dispatcher >>> elevator 2 status" << endl
 			 << "direction: " << E2_status.direction << endl
-			 << "floor: " << E2_status.floor << endl;
+			 << "floor: " << E2_status.floor << endl
+			 << "target floor: " << E2_status.target_floor << endl;
 		print.Signal();
 	}
 
@@ -72,43 +74,56 @@ int main()
 	r1.Wait();
 	CPipe pipe1("MyPipe", 1024); // pipeline from IO with keyboard commands
 	int Message = NULL;
-	int current_floor_input = NULL;
+	int current_floor = NULL;
 
 	while (1) {
 		pipe1.Read(&mystruct, sizeof(mystruct));
 
 		//Outside Elevator
 		if (mystruct.x == 'u') {
-			// need to handle if mystruct.y is not in range 0-9
-			current_floor_input = mystruct.y - '0';
-			Message = 10 + current_floor_input;	// 10-19 for up
+			current_floor = mystruct.y - '0';
+			if (current_floor >= 0 && current_floor <= 9) {
+				Message = 10 + current_floor;	// 10-19 for up
 
-			if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input > E2_status.floor && E1_status.floor > E2_status.floor)
-				p1.Post(Message);
-			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input > E2_status.floor && E1_status.floor < E2_status.floor)
-				p2.Post(Message);
-			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input > E1_status.floor && current_floor_input < E2_status.floor)
-				p1.Post(Message);
-			else if (E1_status.direction == 0 && E2_status.direction == 0 && current_floor_input < E1_status.floor && current_floor_input > E2_status.floor)
-				p2.Post(Message);
+				if (E1_status.direction && E1_status.floor <= current_floor && E1_status.target_floor >= current_floor) {
+					if (E2_status.direction && E2_status.floor <= current_floor && E2_status.target_floor >= current_floor) {
+						if ((current_floor - E1_status.floor) < (current_floor - E2_status.floor))
+							p1.Post(Message);
+						else
+							p2.Post(Message);
+					}
+					else
+						p1.Post(Message);
+				}
+				else if (E2_status.direction && E2_status.floor <= current_floor && E2_status.target_floor >= current_floor)
+					p2.Post(Message);
+				else if (E1_status.direction && E1_status.floor <= current_floor) { // target_floor is < current_floor
+					if (E2_status.direction && E2_status.floor <= current_floor) {
+						// ?
+					}
+				}
+			}
 		}
 		else if (mystruct.x == 'd') {
-			// need to handle if mystruct.y is not in range 0-9
-			current_floor_input = mystruct.y - '0';
-			Message = 20 + current_floor_input; // 20-29 for down
+			current_floor = mystruct.y - '0';
+			if (current_floor >= 0 && current_floor <= 9) {
+				Message = 20 + current_floor; // 20-29 for down
+			}
 		}
 		//Inside Elevator
 		else if (mystruct.x == '1' || mystruct.x == '2') {
-			// need to handle if mystruct.y is not in range 0-9
 			int elevator_num = mystruct.x - '0';
 			int target_floor = mystruct.y - '0';
-			if (mystruct.x == '1')
-				p1.Post(target_floor);
-			else
-				p2.Post(target_floor);
+			if (target_floor >= 0 && target_floor <= 9) {
+				if (mystruct.x == '1')
+					p1.Post(target_floor);
+				else
+					p2.Post(target_floor);
+			}
 		}
 		else {
 			// wrong command 
+			// if do nothing, don't need this?
 		}
 	}
 

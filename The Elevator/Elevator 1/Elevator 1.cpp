@@ -23,12 +23,14 @@ UINT __stdcall ReadMailbox(void *args)
 {
 	r1.Wait();
 	int i = 0;
-	// initialize status
-	status = {0, 1};
+	// initialize status: floor 0, going up, target floor 0
+	status = {0, 1, 0};
 	Elevator1Status.Update_Status(status);
 	// suspends until you get the first message. doesnt matter if up or down
 	Message = Elevator1Mailbox.GetMessage();
 	last_requested_floor = Message % 10; // what if this starts as 0?
+	status = { 0, 1, last_requested_floor };
+	Elevator1Status.Update_Status(status);
 
 	while (1)
 	{
@@ -117,7 +119,7 @@ int main()
 			Sleep(1000);
 			elevator_floor++;
 			elevator_direction = 1;
-			status = {elevator_floor, elevator_direction};
+			status = {elevator_floor, elevator_direction, last_requested_floor};
 			Elevator1Status.Update_Status(status);
 		}
 		while (elevator_floor > last_requested_floor)
@@ -152,7 +154,7 @@ int main()
 			Sleep(1000);
 			elevator_floor--;
 			elevator_direction = 0;
-			status = {elevator_floor, elevator_direction};
+			status = {elevator_floor, elevator_direction, last_requested_floor};
 			Elevator1Status.Update_Status(status);
 		}
 		int passenger_waiting = 0; // 0 = no one waiting, 1 = waiting and going same direction, 2 = waiting and going opposite direction
@@ -215,6 +217,8 @@ int main()
 							door1 = 0;
 							Sleep(1000);
 							elevator_floor++;
+							status = { elevator_floor, elevator_direction, last_requested_floor };
+							Elevator1Status.Update_Status(status);
 						}
 						else
 						{
@@ -225,6 +229,8 @@ int main()
 							door1 = 0;
 							Sleep(1000);
 							elevator_floor--;
+							status = { elevator_floor, elevator_direction, last_requested_floor };
+							Elevator1Status.Update_Status(status);
 						}
 					}
 				}
@@ -247,6 +253,8 @@ int main()
 					door1 = 0;
 					Sleep(1000);
 					elevator_floor++;
+					status = { elevator_floor, elevator_direction, last_requested_floor };
+					Elevator1Status.Update_Status(status);
 				}
 				else
 				{ // elevator went down, passenger requesting down
@@ -264,6 +272,8 @@ int main()
 					door1 = 0;
 					Sleep(1000);
 					elevator_floor--;
+					status = { elevator_floor, elevator_direction, last_requested_floor };
+					Elevator1Status.Update_Status(status);
 				}
 			}
 			else
@@ -285,6 +295,8 @@ int main()
 					door1 = 0;
 					Sleep(1000);
 					elevator_floor--;
+					status = { elevator_floor, elevator_direction, last_requested_floor };
+					Elevator1Status.Update_Status(status);
 				}
 				else
 				{ // elevator went down, passenger requesting up
@@ -303,6 +315,8 @@ int main()
 					door1 = 0;
 					Sleep(1000);
 					elevator_floor++;
+					status = { elevator_floor, elevator_direction, last_requested_floor };
+					Elevator1Status.Update_Status(status);
 				}
 			}
 		}

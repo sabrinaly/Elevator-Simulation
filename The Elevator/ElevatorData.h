@@ -24,7 +24,7 @@ struct elevator_status
 {
 	int floor;		// floor corresponding to lifts current position
 	int direction;  // direction of travel of lift
-	// int target_floor;
+	int target_floor;
 };
 
 int stop; // for testing purposes
