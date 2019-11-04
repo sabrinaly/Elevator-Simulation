@@ -1,11 +1,30 @@
 // Names: Sabrina Ly & Raymond Chu
 // Student Numbers: 16997158 & 23248157
 
+/**
+
+	TODO:
+	- max 4 passengers
+	- dispatcher algorithm
+	- print status and other debug prints - RAYMOND - WIP
+	- elevator faults
+	- activate active objects
+ */
+
 #ifndef __ElevatorData__
 #define __ElevatorData__
 
 #include "C:\RTExamples\rt.h"
 #include <random>
+
+#define COMMAND_SIZE 100
+#define EV_UP 1
+#define EV_DOWN 0
+#define REQ_DOWN 1
+#define REQ_UP 2
+#define NOONE 0
+#define SAME_DIR 1
+#define OPP_DIR 2
 
 struct mydatapooldata
 {					// start of structure template
@@ -22,15 +41,14 @@ struct pipeline_data
 
 struct elevator_status
 {
-	int floor;		// floor corresponding to lifts current position
-	int direction;  // direction of travel of lift
+	int floor;	 // floor corresponding to lifts current position
+	int direction; // direction of travel of lift
 	int target_floor;
 };
 
-int stop; // for testing purposes
 int floors = 10;
-int door1 = 1; // 1 = open, 0 = close
-int door2 = 1;
+int door1 = 0; // 1 = open, 0 = close
+int door2 = 0;
 /* struct dispatcher_status
 {
 	int temp; // the data to be protected
@@ -127,7 +145,7 @@ CCondition EV2_DW9("EV2_DW9");
 CRendezvous r1("StartRendezvous", 8);
 CRendezvous r2("EndRendezvous", 8);
 
-CMutex print("PrintMutex");
+CMutex cursor("Cursor");
 CMutex passengerPipelineMutex("PassengerMutex");
 CMutex pipelineMutex("PipelineMutex");
 #endif

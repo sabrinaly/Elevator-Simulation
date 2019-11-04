@@ -29,7 +29,7 @@ UINT __stdcall ReadMailbox(void *args)
 	// suspends until you get the first message. doesnt matter if up or down
 	Message = Elevator1Mailbox.GetMessage();
 	last_requested_floor = Message % 10; // what if this starts as 0?
-	status = { 0, 1, last_requested_floor };
+	status = {0, 1, last_requested_floor};
 	Elevator1Status.Update_Status(status);
 
 	while (1)
@@ -38,7 +38,7 @@ UINT __stdcall ReadMailbox(void *args)
 		{
 			Message = Elevator1Mailbox.GetMessage();
 			// increase the age of all valid commands
-			for (i = 0; i < 100; i++)
+			for (i = 0; i < COMMAND_SIZE; i++)
 			{
 				if (commands[i].valid)
 				{
@@ -51,7 +51,7 @@ UINT __stdcall ReadMailbox(void *args)
 				// smallest valid age is 1
 				c = {last_requested_floor, 1, 1};
 				last_requested_floor = Message;
-				for (i = 0; i < 100; i++)
+				for (i = 0; i < COMMAND_SIZE; i++)
 				{
 					if (commands[i].valid == 0)
 					{
@@ -64,7 +64,7 @@ UINT __stdcall ReadMailbox(void *args)
 			else
 			{
 				c = {Message, 1, 1};
-				for (i = 0; i < 100; i++)
+				for (i = 0; i < COMMAND_SIZE; i++)
 				{
 					if (commands[i].valid == 0)
 					{
@@ -87,9 +87,12 @@ int main()
 
 	while (1)
 	{
+
+		/*********  ELEVATOR GOING UP  **********/
+
 		while (elevator_floor < last_requested_floor) //do we need to check for elevator_direction too??
 		{
-			for (i = 0; i < 100; i++)
+			for (i = 0; i < COMMAND_SIZE; i++)
 			{
 				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 1)
 				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
@@ -100,31 +103,20 @@ int main()
 			}
 			if (stopped_flag)
 			{
-				EV1_UP_SIGNAL();
-				// door opens
-				door1 = 1;
-				Sleep(2000);
-				for (i = 0; i < 100; i++)
-				{
-					if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
-					{
-						commands[i].valid = 0;
-					}
-				}
-				EV1_UP_RESET();
-				// door closes
-				door1 = 0;
+				stop_elevator(REQ_DOWN, EV_UP);
 			}
 			stopped_flag = 0;
 			Sleep(1000);
 			elevator_floor++;
 			elevator_direction = 1;
-			status = {elevator_floor, elevator_direction, last_requested_floor};
-			Elevator1Status.Update_Status(status);
+			update_status();
 		}
+
+		/*********  ELEVATOR GOING DOWN  **********/
+
 		while (elevator_floor > last_requested_floor)
 		{
-			for (i = 0; i < 100; i++)
+			for (i = 0; i < COMMAND_SIZE; i++)
 			{
 				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 2)
 				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
@@ -135,32 +127,23 @@ int main()
 			}
 			if (stopped_flag)
 			{
-				EV1_DW_SIGNAL();
-				// door opens
-				door1 = 1;
-				Sleep(2000);
-				for (i = 0; i < 100; i++)
-				{
-					if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
-					{
-						commands[i].valid = 0;
-					}
-				}
-				EV1_DW_RESET();
-				// door closes
-				door1 = 0;
+				stop_elevator(REQ_DOWN, EV_DOWN);
 			}
 			stopped_flag = 0;
 			Sleep(1000);
 			elevator_floor--;
 			elevator_direction = 0;
-			status = {elevator_floor, elevator_direction, last_requested_floor};
-			Elevator1Status.Update_Status(status);
+			update_status();
 		}
-		int passenger_waiting = 0; // 0 = no one waiting, 1 = waiting and going same direction, 2 = waiting and going opposite direction
+
+		/**================================================== *
+		 * ==========  Elevator at target floor  ============ *
+		 * ================================================== */
+
+		int passenger_waiting = NOONE; // 0 = no one waiting, 1 = waiting and going same direction, 2 = waiting and going opposite direction
 		if (elevator_floor == last_requested_floor)
 		{
-			for (i = 0; i < 100; i++)
+			for (i = 0; i < COMMAND_SIZE; i++)
 			{
 				if (commands[i].valid && (elevator_floor == commands[i].command % 10))
 				{
@@ -170,7 +153,7 @@ int main()
 					if ((elevator_direction && commands[i].command / 10) || (elevator_direction == 0 && commands[i].command / 10 == 2))
 					{
 						//commands[i].valid = 0;
-						passenger_waiting = 1;
+						passenger_waiting = SAME_DIR;
 						break;
 					}
 					// passenger waiting on this floor, but requested the opposite direction
@@ -178,20 +161,23 @@ int main()
 					{
 						//still need passengers to get off, bottom part still needs to work
 						// after we need to signal the opposite direction
-						passenger_waiting = 2;
+						passenger_waiting = OPP_DIR;
 					}
 				}
 			}
+
+			/*********  NO PASSENGERS  **********/
+
 			// if no passengers are waiting at this floor, then we set a new last_requested_floor
 			int largest_age = 0;
 			int largest_age_index = 0;
-			if (passenger_waiting == 0)
+			if (passenger_waiting == NOONE)
 			{
-				door1 = 1; // open door
+				open_door();
 				//poll for new command
 				while (largest_age == 0)
 				{
-					for (i = 0; i < 100; i++)
+					for (i = 0; i < COMMAND_SIZE; i++)
 					{
 						if (commands[i].valid && commands[i].age > largest_age)
 						{
@@ -199,6 +185,7 @@ int main()
 							largest_age_index = i;
 						}
 					}
+
 					//TODO: change so that door stays close in idle
 					// if largest age is 0, that means there are no valid commands in the list and elevator should be idle
 					// idle = last_requested_floor is elevator floor
@@ -214,11 +201,10 @@ int main()
 							EV1_UP_SIGNAL();
 							Sleep(2000);
 							EV1_UP_RESET();
-							door1 = 0;
+							close_door();
 							Sleep(1000);
 							elevator_floor++;
-							status = { elevator_floor, elevator_direction, last_requested_floor };
-							Elevator1Status.Update_Status(status);
+							update_status();
 						}
 						else
 						{
@@ -226,97 +212,60 @@ int main()
 							EV1_DW_SIGNAL();
 							Sleep(2000);
 							EV1_DW_RESET();
-							door1 = 0;
+							close_door();
 							Sleep(1000);
 							elevator_floor--;
-							status = { elevator_floor, elevator_direction, last_requested_floor };
-							Elevator1Status.Update_Status(status);
+							update_status();
 						}
 					}
 				}
 			}
-			else if (passenger_waiting)
+
+			/*********  PASSENGER GOING SAME DIR  **********/
+
+			else if (passenger_waiting == SAME_DIR)
 			{
 				if (elevator_direction)
 				{ // elevator went up, passenger requesting up
-					EV1_UP_SIGNAL();
-					door1 = 1;
-					Sleep(2000);
-					for (i = 0; i < 100; i++)
-					{
-						if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
-						{
-							commands[i].valid = 0;
-						}
-					}
-					EV1_UP_RESET();
-					door1 = 0;
+					stop_elevator(REQ_UP, EV_UP);
 					Sleep(1000);
 					elevator_floor++;
-					status = { elevator_floor, elevator_direction, last_requested_floor };
-					Elevator1Status.Update_Status(status);
+					update_status();
 				}
 				else
 				{ // elevator went down, passenger requesting down
-					EV1_DW_SIGNAL();
-					door1 = 1;
-					Sleep(2000);
-					for (i = 0; i < 100; i++)
-					{
-						if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
-						{
-							commands[i].valid = 0;
-						}
-					}
-					EV1_DW_RESET();
-					door1 = 0;
+					stop_elevator(REQ_DOWN, EV_DOWN);
 					Sleep(1000);
 					elevator_floor--;
-					status = { elevator_floor, elevator_direction, last_requested_floor };
-					Elevator1Status.Update_Status(status);
+					update_status();
 				}
 			}
-			else
+
+			/*********  PASSENGER GOING OPP DIR  **********/
+
+			else if (passenger_waiting == OPP_DIR)
 			{ // passenger_waiting == 2
 				if (elevator_direction)
 				{ // elevator went up, passenger requesting down
 					elevator_direction = 0;
-					door1 = 1;
 					EV1_UP_SIGNAL(); // for passengers getting off
 					EV1_UP_RESET();
-					EV1_DW_SIGNAL(); // for passengers going down
-					Sleep(2000);
-					for (i = 0; i < 100; i++)
-					{
-						if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
-							commands[i].valid = 0;
-					}
-					EV1_DW_RESET();
-					door1 = 0;
+					//elevator going down now and passengers getting on to go down
+					stop_elevator(REQ_DOWN, EV_DOWN);
 					Sleep(1000);
 					elevator_floor--;
-					status = { elevator_floor, elevator_direction, last_requested_floor };
-					Elevator1Status.Update_Status(status);
+					update_status();
 				}
 				else
 				{ // elevator went down, passenger requesting up
 					elevator_direction = 1;
-					door1 = 1;
 					EV1_DW_SIGNAL(); // for passengers getting off
 					EV1_DW_RESET();
-					EV1_UP_SIGNAL(); // for passengers going up
-					Sleep(2000);
-					for (i = 0; i < 100; i++)
-					{
-						if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
-							commands[i].valid = 0;
-					}
-					EV1_UP_RESET();
-					door1 = 0;
+					//elevator going up now and passengers getting on to go up
+					stop_elevator(REQ_UP, EV_UP);
 					Sleep(1000);
 					elevator_floor++;
-					status = { elevator_floor, elevator_direction, last_requested_floor };
-					Elevator1Status.Update_Status(status);
+					update_status();
 				}
 			}
 		}
@@ -329,6 +278,63 @@ int main()
 	t1.WaitForThread();
 
 	return 0;
+}
+
+//clears command that have been consumed (e.g passenger got off, passenger got on)
+void clear_command(int requested_direction)
+{
+	for (i = 0; i < COMMAND_SIZE; i++)
+	{
+		if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != requested_direction))
+		{
+			commands[i].valid = 0;
+		}
+	}
+}
+
+//called whenever elevator stops to let passengers off or pick up passengers
+void stop_elevator(int requested_direction, int elevator_direction)
+{
+	if (elevator_direction == EV_UP)
+	{
+		open_door();
+		EV1_UP_SIGNAL();
+		Sleep(2000);
+		clear_command(requested_direction);
+		EV1_UP_RESET();
+		close_door();
+	}
+	else if (elevator_direction == EV_DOWN)
+	{
+		open_door();
+		EV1_DW_SIGNAL();
+		Sleep(2000);
+		clear_command(requested_direction);
+		EV1_DW_RESET();
+		close_door();
+	}
+}
+
+void open_door()
+{
+	door1 = 1;
+	cursor.Wait();
+	cout << "ElEVATOR 1 DOOR OPENED" << endl;
+	cursor.Signal();
+}
+
+void close_door()
+{
+	door1 = 0;
+	cursor.Wait();
+	cout << "ElEVATOR 1 DOOR CLOSED" << endl;
+	cursor.Signal();
+}
+
+void update_status()
+{
+	status = {elevator_floor, elevator_direction, last_requested_floor};
+	Elevator1Status.Update_Status(status);
 }
 
 void EV1_UP_SIGNAL()
