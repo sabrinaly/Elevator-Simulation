@@ -92,6 +92,7 @@ int main()
 			else if (input1 == 'e' && input2 == 'e') {}
 				// elevators return to floor 0, open doors, end simulation 
 			else {
+				//if input not valid -- do something
 				pipeline1struct = { input1, input2 };
 				pipelineMutex.Wait();
 				pipe1.Write(&pipeline1struct, sizeof(pipeline1struct));
