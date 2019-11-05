@@ -35,6 +35,7 @@ UINT __stdcall IOStatusElevator1(void *args)
 		print_floor_array(E1_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
 		print_floor_array(E1_status.DOWN_array);
+		cout.flush();
 		cursor.Signal();
 	}
 
@@ -62,6 +63,7 @@ UINT __stdcall IOStatusElevator2(void *args)
 		print_floor_array(E2_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
 		print_floor_array(E2_status.DOWN_array);
+		cout.flush();
 		cursor.Signal();
 	}
 	r2.Wait();
