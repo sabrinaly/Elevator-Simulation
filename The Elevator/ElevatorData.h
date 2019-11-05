@@ -8,11 +8,10 @@
 	- dispatcher algorithm - SABRINA - IMPLEMENTED
 	- print status and other debug prints - RAYMOND - WIP
 		- only printing elevator status and command rn
-	- elevator faults - SABRINA - done in IO and dispatcher, not done in elevator
-		- target floor right now keeps opening/closing
-		- last_requested_floor not being set
+	- elevator faults - SABRINA - IMPLEMENTED
 	- activate active objects/mode changes
-	- mailbox to end simulation - need to handle in elevator
+	- mailbox to end simulation - IMPLEMENTED
+		- make doors open when simulation ends
 	- put door status in monitor? - RAYMOND - DONE
 	- move mode into status so IO can print the mode
  */

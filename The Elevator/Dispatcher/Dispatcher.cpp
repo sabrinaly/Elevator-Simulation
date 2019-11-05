@@ -37,6 +37,10 @@ UINT __stdcall DispatcherStatusElevator2(void *args)
 	return 0;
 }
 
+/**================================================== *
+ * ==========  READ PIPELINE  ========== *
+ * ================================================== */
+
 UINT __stdcall ReadPipeline(void *args)
 {
 	r1.Wait();
@@ -96,6 +100,7 @@ UINT __stdcall ReadPipeline(void *args)
 	r2.Wait();
 	return 0;
 }
+/* =======  End of READ PIPELINE  ======= */
 
 int main()
 {
@@ -137,7 +142,10 @@ int main()
 		for (int i = 0; i < COMMAND_SIZE; i++)
 		{
 
-			/*********  FAULTS  **********/
+			/**================================================== *
+			 * ==========  FAULTS  ========== *
+			 * ================================================== */
+
 			// TODO: what if passengers are stuck inside during fault
 			if (command_array[COMMAND_SIZE - 1].command == E1_FAULT)
 			{
@@ -148,7 +156,7 @@ int main()
 				while (command_array[COMMAND_SIZE - 1].command != E1_CLEAR)
 				{
 				}
-				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				//Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E2_FAULT)
@@ -160,7 +168,7 @@ int main()
 				while (command_array[COMMAND_SIZE - 1].command != E2_CLEAR)
 				{
 				}
-				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				//Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == END_SIM)
@@ -169,10 +177,15 @@ int main()
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 			}
 
+			/* =======  End of FAULTS  ======= */
+
 			command_type = command_array[i].command / 10;
 			command_floor = command_array[i].command % 10;
 
-			/*********  Outside Elevator, Up Input  **********/
+			/**================================================== *
+			 * ==========  Outside Elevator, Up Input  ========== *
+			 * ================================================== */
+
 			if (command_type == DIS_OUT_UP)
 			{
 				Message = 10 + command_floor; // 10-19 for up
@@ -225,7 +238,12 @@ int main()
 				// not on the way, leave command in array
 			}
 
-			/*********  Outside Elevator, Down Input  **********/
+			/* =======  End of Outside Elevator, UP Input  ======= */
+
+			/**================================================== *
+			 * ==========  Outside Elevator, Down Input  ========== *
+			 * ================================================== */
+
 			else if (command_type == DIS_OUT_DOWN)
 			{
 				Message = 20 + command_floor; // 20-29 for down
@@ -275,7 +293,12 @@ int main()
 				// not on the way, leave command in array
 			}
 
-			/*********  Inside Elevator  **********/
+			/* =======  End of Outside Elevator, Down Input  ======= */
+
+			/**================================================== *
+			 * ==========  Inside Elevator  ========== *
+			 * ================================================== */
+
 			else if ((command_type == DIS_E1) || (command_type == DIS_E2))
 			{
 				if (command_type == DIS_E1)
@@ -298,7 +321,12 @@ int main()
 			}
 		}
 
-		/*********  EV Reached Target Floor  **********/
+		/* =======  End of Inside Elevator  ======= */
+
+		/**================================================== *
+		 * ==========  Section EV Reached Target Floor  ========== *
+		 * ================================================== */
+
 		// if elevator reached target floor, issue new command from array
 		// TODO: ?? will there be passengers waiting on this floor
 		int largest_age_index = 0;
@@ -329,6 +357,7 @@ int main()
 				}
 			}
 		}
+		/* =======  End of EV Reached Target Floor  ======= */
 	}
 
 	/* =======  End of Dispatcher  ======= */

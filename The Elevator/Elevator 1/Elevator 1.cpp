@@ -95,7 +95,10 @@ int main()
 		int command_type = Message / 10;
 		int req_floor = Message % 10;
 
-		/*********  Populate Elevator Array  **********/
+		/**================================================== *
+		 * ==========  Section Populate Elevator Array  ========== *
+		 * ================================================== */
+
 		if (Message == E1_FAULT)
 		{
 			clear_floor_array();
@@ -106,6 +109,7 @@ int main()
 		{
 			clear_floor_array();
 			target_floor = 0;
+			// TODO: open doors
 		}
 		if (elevator_floor == target_floor)
 		{
