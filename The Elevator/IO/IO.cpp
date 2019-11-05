@@ -6,6 +6,7 @@
 
 //Function Headers
 void print_floor_array(floor_struct floor_array[10]);
+void print_door(int);
 
 command passengerstruct;
 command pipeline1struct;
@@ -28,10 +29,9 @@ UINT __stdcall IOStatusElevator1(void *args)
 			 << "direction: " << E1_status.direction << endl
 			 << "floor: " << E1_status.floor << endl
 			 << "target floor: " << E1_status.target_floor << endl
-			 << "passenger count: " << E1_status.passenger_count << endl
-			 << "door status: " << E1_status.door << endl;
+			 << "passenger count: " << E1_status.passenger_count << endl;
+		print_door(E1_status.door);
 		cout << "... UP ARRAY ..." << endl;
-		cout << "stop: " << E1_status.UP_array[5].stop << endl;
 		print_floor_array(E1_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
 		print_floor_array(E1_status.DOWN_array);
@@ -56,8 +56,8 @@ UINT __stdcall IOStatusElevator2(void *args)
 			 << "direction: " << E2_status.direction << endl
 			 << "floor: " << E2_status.floor << endl
 			 << "target floor: " << E2_status.target_floor << endl
-			 << "passenger count: " << E2_status.passenger_count << endl
-			 << "door status: " << E2_status.door << endl;
+			 << "passenger count: " << E2_status.passenger_count << endl;
+		print_door(E2_status.door);
 		cout << "... UP ARRAY ..." << endl;
 		print_floor_array(E2_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
@@ -192,4 +192,12 @@ void print_floor_array(floor_struct floor_array[10])
 		cout << floor_array[i].passenger_outside << " ";
 	}
 	cout << "]" << endl;
+}
+
+void print_door(int door)
+{
+	if (door)
+		cout << "door status: OPEN" << endl;
+	else
+		cout << "door status: CLOSED" << endl;
 }
