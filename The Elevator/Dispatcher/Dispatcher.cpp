@@ -4,6 +4,11 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 
+//Function Headers
+int check_max_passenger(int, int);
+int find_largest_age_index();
+void save_command(int);
+
 command mystruct;
 
 elevator_status E1_status;
@@ -371,6 +376,9 @@ int main()
 	Elevator2.WaitForProcess();
 	IO.WaitForProcess();
 
+	delete[] command_array;
+	command_array = NULL;
+
 	return 0;
 }
 
@@ -469,108 +477,3 @@ int check_max_passenger(int req_floor, int elevator_num)
 		}
 	}
 }
-
-// 0-9 = E1 inside, 10-19 = E2 inside, 20-29 = outside up, 30-39 = outside down
-
-// E1, going up
-/*
-		if (E1_status.floor < E1_status.target_floor)
-		{
-			for (int i = 0; i < COMMAND_SIZE; i++)
-			{
-				if (command_array[i].valid && (command_array[i].command % 10 > E1_status.floor) && (command_array[i].command % 10 <= E1_status.target_floor) && (command_type == DIS_E1))
-				{
-					command_array[i].valid = 0;
-					Elevator1.Post(command_array[i].command % 10);
-				}
-				else if (command_array[i].valid && (command_array[i].command % 10 > E1_status.floor) && (command_array[i].command % 10 <= E1_status.target_floor) && (command_type == DIS_OUT_UP))
-				{
-					command_array[i].valid = 0;
-					Elevator1.Post(10 + (command_array[i].command % 10));
-				}
-			}
-		}
-
-		// E1, going down
-		if (E1_status.floor > E1_status.target_floor)
-		{
-			for (int i = 0; i < COMMAND_SIZE; i++)
-			{
-				if (command_array[i].valid && (command_array[i].command % 10 < E1_status.floor) && (command_array[i].command % 10 >= E1_status.target_floor) && (command_type == DIS_E1))
-				{
-					command_array[i].valid = 0;
-					Elevator1.Post(command_array[i].command % 10);
-				}
-				else if (command_array[i].valid && (command_array[i].command % 10 < E1_status.floor) && (command_array[i].command % 10 >= E1_status.target_floor) && (command_type == DIS_OUT_DOWN))
-				{
-					command_array[i].valid = 0;
-					Elevator1.Post(20 + (command_array[i].command % 10));
-				}
-			}
-		}
-
-		// E2, going up
-		if (E2_status.floor < E2_status.target_floor)
-		{
-			for (int i = 0; i < COMMAND_SIZE; i++)
-			{
-				if (command_array[i].valid && (command_array[i].command % 10 > E2_status.floor) && (command_array[i].command % 10 <= E2_status.target_floor) && (command_type == DIS_E2))
-				{
-					command_array[i].valid = 0;
-					Elevator2.Post(command_array[i].command % 10);
-				}
-				else if (command_array[i].valid && (command_array[i].command % 10 > E2_status.floor) && (command_array[i].command % 10 <= E2_status.target_floor) && (command_type == DIS_OUT_UP))
-				{
-					command_array[i].valid = 0;
-					Elevator2.Post(10 + (command_array[i].command % 10));
-				}
-			}
-		}
-
-		// E2, going down
-		if (E2_status.floor > E2_status.target_floor)
-		{
-			for (int i = 0; i < COMMAND_SIZE; i++)
-			{
-				if (command_array[i].valid && (command_array[i].command % 10 < E2_status.floor) && (command_array[i].command % 10 >= E2_status.target_floor) && (command_type == DIS_E2))
-				{
-					command_array[i].valid = 0;
-					Elevator2.Post(command_array[i].command % 10);
-				}
-				else if (command_array[i].valid && (command_array[i].command % 10 < E2_status.floor) && (command_array[i].command % 10 >= E2_status.target_floor) && (command_type == DIS_OUT_DOWN))
-				{
-					command_array[i].valid = 0;
-					Elevator2.Post(20 + (command_array[i].command % 10));
-				}
-			}
-		}
-
-		int largest_age_index = 0;
-		int largest_age = 0;
-		if (E1_status.target_floor == E1_status.floor)
-		{
-			while (largest_age == 0)
-			{
-				largest_age_index = find_largest_age_index();
-				largest_age = command_array[largest_age_index].age;
-				if (largest_age != 0)
-				{
-					command_array[largest_age_index].valid = 0;
-					Elevator1.Post(command_array[largest_age_index].command);
-				}
-			}
-		}
-		else if (E2_status.target_floor == E2_status.floor)
-		{
-			while (largest_age == 0)
-			{
-				largest_age_index = find_largest_age_index();
-				largest_age = command_array[largest_age_index].age;
-				if (largest_age != 0)
-				{
-					command_array[largest_age_index].valid = 0;
-					Elevator2.Post(command_array[largest_age_index].command);
-				}
-			}
-		}
-		*/

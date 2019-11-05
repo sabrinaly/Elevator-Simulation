@@ -4,14 +4,24 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 
+//Function Headers
+int check_empty_array();
+void clear_floor_array();
+void close_door();
+void open_door();
+void stop_elevator(int);
+void update_status();
+void EV1_DW_RESET();
+void EV1_DW_SIGNAL();
+void EV1_UP_RESET();
+void EV1_UP_SIGNAL();
+
 ElevatorStatus Elevator1Status("Elevator1");
 elevator_status status;
 UINT Message;
 int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
-
-command_struct *commands = new command_struct[100];
 
 UINT __stdcall Elevator1Move(void *args)
 {
@@ -77,10 +87,8 @@ int main()
 {
 	CThread t1(Elevator1Move, ACTIVE, NULL);
 	r1.Wait();
-	int i = 0;
 	int stopped_flag = 0;
 
-	int i = 0;
 	// initialize status: floor 0, going up, target floor 0
 	update_status();
 
@@ -232,7 +240,7 @@ void close_door()
 
 void update_status()
 {
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, EV1UP_array, EV1DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, *EV1UP_array, *EV1DOWN_array};
 	Elevator1Status.Update_Status(status);
 }
 
@@ -252,7 +260,7 @@ int check_empty_array()
 
 void clear_floor_array()
 {
-	for (int i = 0; i < NUM_FLOORS, i++)
+	for (int i = 0; i < NUM_FLOORS; i++)
 	{
 		EV1UP_array[i].stop = 0;
 		EV1UP_array[i].passenger_inside = 0;

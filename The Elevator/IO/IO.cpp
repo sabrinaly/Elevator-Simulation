@@ -4,6 +4,9 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 
+//Function Headers
+void print_floor_array(floor_struct);
+
 command passengerstruct;
 command pipeline1struct;
 
@@ -27,9 +30,9 @@ UINT __stdcall IOStatusElevator1(void *args)
 			 << "passenger count: " << E1_status.passenger_count << endl
 			 << "door status: " << E1_status.door << endl;
 		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(E1_status.UP_array);
+		print_floor_array(*E1_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(E1_status.DOWN_array);
+		print_floor_array(*E1_status.DOWN_array);
 		cursor.Signal();
 	}
 
@@ -55,9 +58,9 @@ UINT __stdcall IOStatusElevator2(void *args)
 			 << "passenger count: " << E2_status.passenger_count << endl
 			 << "door status: " << E2_status.door << endl;
 		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(E2_status.UP_array);
+		print_floor_array(*E2_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(E2_status.DOWN_array);
+		print_floor_array(*E2_status.DOWN_array);
 		cursor.Signal();
 	}
 	r2.Wait();
@@ -68,7 +71,7 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 {
 	r1.Wait();
 	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
-	CPipe dispatcherPipe("DispatcherPipeline", 1024);
+	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 	while (1)
 	{
 		passengerPipe.Read(&passengerstruct);
@@ -88,7 +91,7 @@ int main()
 	CThread Elevator1(IOStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2(IOStatusElevator2, ACTIVE, NULL);
 	CThread Passenger(ReadPassengerPipeline, ACTIVE, NULL);
-	CPipe dispatcherPipe("DispatcherPipeline", 1024);
+	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 
 	r1.Wait();
 

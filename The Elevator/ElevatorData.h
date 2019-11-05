@@ -59,6 +59,13 @@ struct command
 	char y;
 };
 
+struct floor_struct
+{
+	int stop = 0;
+	int passenger_inside = 0;
+	int passenger_outside = 0;
+};
+
 struct elevator_status
 {
 	int floor;	 // floor corresponding to lifts current position
@@ -77,13 +84,6 @@ struct command_struct
 	int age = 0;
 } c;
 
-struct floor_struct
-{
-	int stop = 0;
-	int passenger_inside = 0;
-	int passenger_outside = 0;
-};
-
 floor_struct EV1UP_array[10];
 floor_struct EV1DOWN_array[10];
 floor_struct EV2UP_array[10];
@@ -96,31 +96,6 @@ int mode = MANUAL_MODE;
 
 int door1 = 0; // 1 = open, 0 = close
 int door2 = 0;
-/* struct dispatcher_status
-{
-	int temp; // the data to be protected
-}; */
-
-/* struct IO_status
-{
-	int temp; // the data to be protected
-}; */
-
-/* //Elevator 1 Dispatcher Data
-CDataPool *DispatcherElevator1DataPool;
-dispatcher_status *dispatcher_E1_status;
-
-//Elevator 2 Dispatcher Data
-CDataPool *DispatcherElevator2DataPool;
-dispatcher_status *dispatcher_E2_status;
-
-//Elevator 1 IO Data
-CDataPool *IOElevator1DataPool;
-IO_status *IO_E1_status;
-
-//Elevator 2 IO Data
-CDataPool *IOElevator2DataPool;
-IO_status *IO_E2_status; */
 
 CMailbox Elevator1Mailbox;
 CMailbox Elevator2Mailbox;
