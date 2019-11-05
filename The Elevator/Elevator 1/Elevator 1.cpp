@@ -104,7 +104,6 @@ int main()
 
 	while (1)
 	{
-
 		Message = Elevator1Mailbox.GetMessage();
 		int command_type = Message / 10;
 		int req_floor = Message % 10;
@@ -174,6 +173,7 @@ int main()
 		//if passenger is outside and requesting to go up
 		else if (command_type == OUT_UP)
 		{
+			cout << "TEST" << endl;
 			EV1UP_array[req_floor].stop = 1;
 			EV1UP_array[req_floor].passenger_outside++;
 		}
@@ -189,6 +189,7 @@ int main()
 			target_floor = Message;
 			update_status();
 		}
+		update_status();
 	}
 	/* =======  End of Listen for Commands  ======= */
 

@@ -203,7 +203,8 @@ int main()
 					{
 						if (command_array[largest_age_index].valid)
 						{
-							cout << "Posting to EV1" << endl;
+							if (debug)
+								cout << "Posting to EV1" << endl;
 							Elevator1.Post(command_array[largest_age_index].command);
 						}
 						command_array[largest_age_index].valid = 0;
@@ -220,7 +221,8 @@ int main()
 					{
 						if (command_array[largest_age_index].valid)
 						{
-							cout << "Posting to EV2" << endl;
+							if (debug)
+								cout << "Posting to EV2" << endl;
 							Elevator2.Post(command_array[largest_age_index].command);
 						}
 						command_array[largest_age_index].valid = 0;

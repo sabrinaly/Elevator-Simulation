@@ -14,6 +14,10 @@
 		- make doors open when simulation ends
 	- put door status in monitor? - RAYMOND - DONE
 	- move mode into status so IO can print the mode
+
+
+	Debugging:
+		- stop not being set because of mailbox message suspend
  */
 
 #ifndef __ElevatorData__
@@ -68,7 +72,7 @@ struct floor_struct
 
 struct elevator_status
 {
-	int floor = 0;	 // floor corresponding to lifts current position
+	int floor = 0;		// floor corresponding to lifts current position
 	int direction = UP; // direction of travel of lift
 	int target_floor = 0;
 	int passenger_count = 0;
@@ -96,6 +100,8 @@ int mode = MANUAL_MODE;
 
 int door1 = 0; // 1 = open, 0 = close
 int door2 = 0;
+
+int debug = 0;
 
 CMailbox Elevator1Mailbox;
 CMailbox Elevator2Mailbox;
