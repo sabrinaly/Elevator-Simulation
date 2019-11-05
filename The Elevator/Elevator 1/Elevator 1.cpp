@@ -87,6 +87,12 @@ int main()
 {
 	CThread t1(Elevator1Move, ACTIVE, NULL);
 	r1.Wait();
+
+	cursor.Wait();
+	MOVE_CURSOR(0, 0);
+	cout << "ELEVATOR1 CREATED" << endl;
+	cursor.Signal();
+
 	int stopped_flag = 0;
 
 	// initialize status: floor 0, going up, target floor 0

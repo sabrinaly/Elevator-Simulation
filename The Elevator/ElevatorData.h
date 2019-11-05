@@ -68,11 +68,11 @@ struct floor_struct
 
 struct elevator_status
 {
-	int floor;	 // floor corresponding to lifts current position
-	int direction; // direction of travel of lift
-	int target_floor;
-	int passenger_count;
-	int door;
+	int floor = 0;	 // floor corresponding to lifts current position
+	int direction = UP; // direction of travel of lift
+	int target_floor = 0;
+	int passenger_count = 0;
+	int door = 0;
 	floor_struct UP_array[10];
 	floor_struct DOWN_array[10];
 };
@@ -164,8 +164,8 @@ CCondition EV2_DW7("EV2_DW7");
 CCondition EV2_DW8("EV2_DW8");
 CCondition EV2_DW9("EV2_DW9");
 
-CRendezvous r1("StartRendezvous", 8);
-CRendezvous r2("EndRendezvous", 8);
+CRendezvous r1("StartRendezvous", 11);
+CRendezvous r2("EndRendezvous", 11);
 
 CMutex cursor("Cursor");
 CMutex passengerPipelineMutex("PassengerMutex");

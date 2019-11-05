@@ -5,7 +5,7 @@
 #include <ElevatorStatus.h>
 
 //Function Headers
-void print_floor_array(floor_struct);
+void print_floor_array(floor_struct floor_array[10]);
 
 command passengerstruct;
 command pipeline1struct;
@@ -21,19 +21,19 @@ UINT __stdcall IOStatusElevator1(void *args)
 	while (1)
 	{
 		E1_status = Elevator1Status.IO_Get_Elevator_Status();
-		cursor.Wait();
-		MOVE_CURSOR(2, 0);
-		cout << "------ ELEVATOR 1 STATUS -----" << endl
-			 << "direction: " << E1_status.direction << endl
-			 << "floor: " << E1_status.floor << endl
-			 << "target floor: " << E1_status.target_floor << endl
-			 << "passenger count: " << E1_status.passenger_count << endl
-			 << "door status: " << E1_status.door << endl;
-		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(*E1_status.UP_array);
-		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(*E1_status.DOWN_array);
-		cursor.Signal();
+		// cursor.Wait();
+		// MOVE_CURSOR(0, 2);
+		// cout << "------ ELEVATOR 1 STATUS -----" << endl
+		// 	 << "direction: " << E1_status.direction << endl
+		// 	 << "floor: " << E1_status.floor << endl
+		// 	 << "target floor: " << E1_status.target_floor << endl
+		// 	 << "passenger count: " << E1_status.passenger_count << endl
+		// 	 << "door status: " << E1_status.door << endl;
+		// cout << "... UP ARRAY ..." << endl;
+		// print_floor_array(E1_status.UP_array);
+		// cout << "... DOWN ARRAY ..." << endl;
+		// print_floor_array(E1_status.DOWN_array);
+		// cursor.Signal();
 	}
 
 	r2.Wait();
@@ -46,22 +46,20 @@ UINT __stdcall IOStatusElevator2(void *args)
 	r1.Wait();
 	while (1)
 	{
-		elevator_status *dispatcher_elevator2status; // pointer to the data struct
-		dispatcher_elevator2status = (struct elevator_status *)(Elevator2StatusDataPool->LinkDataPool());
 		E2_status = Elevator2Status.IO_Get_Elevator_Status();
-		cursor.Wait();
-		MOVE_CURSOR(19, 0);
-		cout << "------ ELEVATOR 2 STATUS -----" << endl
-			 << "direction: " << E2_status.direction << endl
-			 << "floor: " << E2_status.floor << endl
-			 << "target floor: " << E2_status.target_floor << endl
-			 << "passenger count: " << E2_status.passenger_count << endl
-			 << "door status: " << E2_status.door << endl;
-		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(*E2_status.UP_array);
-		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(*E2_status.DOWN_array);
-		cursor.Signal();
+		// cursor.Wait();
+		// MOVE_CURSOR(0, 19);
+		// cout << "------ ELEVATOR 2 STATUS -----" << endl
+		// 	 << "direction: " << E2_status.direction << endl
+		// 	 << "floor: " << E2_status.floor << endl
+		// 	 << "target floor: " << E2_status.target_floor << endl
+		// 	 << "passenger count: " << E2_status.passenger_count << endl
+		// 	 << "door status: " << E2_status.door << endl;
+		// cout << "... UP ARRAY ..." << endl;
+		// print_floor_array(E2_status.UP_array);
+		// cout << "... DOWN ARRAY ..." << endl;
+		// print_floor_array(E2_status.DOWN_array);
+		// cursor.Signal();
 	}
 	r2.Wait();
 	return 0;
@@ -151,7 +149,7 @@ int main()
 			}
 
 			cursor.Wait();
-			MOVE_CURSOR(0, 0);
+			//MOVE_CURSOR(0, 0);
 			cout << "Received command: " << input1 << input2 << endl;
 			cursor.Signal();
 		}
