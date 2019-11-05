@@ -9,276 +9,170 @@ elevator_status status;
 UINT Message;
 int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
-int last_requested_floor = NULL;
-struct command_struct
-{
-	int command = 0;
-	int valid = 0;
-	int age = 0;
-} c;
+int target_floor = 0;
+
 command_struct *commands = new command_struct[100];
 
-UINT __stdcall ReadMailbox(void *args)
+UINT __stdcall Elevator1Move(void *args)
 {
 	r1.Wait();
-	int i = 0;
-	// initialize status: floor 0, going up, target floor 0
-	status = {0, 1, 0};
-	Elevator1Status.Update_Status(status);
-	// suspends until you get the first message. doesnt matter if up or down
-	Message = Elevator1Mailbox.GetMessage();
-	last_requested_floor = Message % 10; // what if this starts as 0?
-	status = {0, 1, last_requested_floor};
-	Elevator1Status.Update_Status(status);
-
 	while (1)
 	{
-		if (Elevator1Mailbox.TestForMessage())
+
+		/*********  ELEVATOR GOING UP  **********/
+		while (elevator_floor < target_floor)
 		{
-			Message = Elevator1Mailbox.GetMessage();
-			// increase the age of all valid commands
-			for (i = 0; i < COMMAND_SIZE; i++)
+			if (EV1UP_array[elevator_floor].stop)
 			{
-				if (commands[i].valid)
-				{
-					commands[i].age++;
-				}
+				stop_elevator(UP);
 			}
-			// if message is from inside elevator (0-9) and the request exceeds the current targeted floor, set as new targeted floor
-			if ((Message < last_requested_floor && elevator_direction == 0) || (Message <= 9 && Message > last_requested_floor && elevator_direction))
+			Sleep(MOVE_DELAY);
+			elevator_floor++;
+			elevator_direction = UP;
+			update_status();
+		}
+		/*********  ELEVATOR GOING DOWN  **********/
+		while (elevator_floor > target_floor)
+		{
+			if (EV1DOWN_array[elevator_floor].stop)
 			{
-				// smallest valid age is 1
-				c = {last_requested_floor, 1, 1};
-				last_requested_floor = Message;
-				for (i = 0; i < COMMAND_SIZE; i++)
-				{
-					if (commands[i].valid == 0)
-					{
-						commands[i] = c;
-						break;
-					}
-				}
+				stop_elevator(DOWN);
 			}
-			// if message is from outside elevator or command not greater than last_requested_floor, save the request
-			else
+			Sleep(MOVE_DELAY);
+			elevator_floor--;
+			elevator_direction = DOWN;
+			update_status();
+		}
+		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
+		if (elevator_floor == target_floor)
+		{
+			while (check_empty_array() == 0)
 			{
-				c = {Message, 1, 1};
-				for (i = 0; i < COMMAND_SIZE; i++)
-				{
-					if (commands[i].valid == 0)
-					{
-						commands[i] = c;
-						break;
-					}
-				}
+				// do nothing
 			}
+			if (elevator_direction == UP)
+			{
+				//Update counters
+				EV_passenger_count = EV_passenger_count - EV1UP_array[target_floor].passenger_inside + EV1UP_array[target_floor].passenger_outside;
+				outside_issued_count -= EV1UP_array[target_floor].passenger_outside;
+				//stop elevator
+				stop_elevator(UP);
+			}
+			else if (elevator_direction == DOWN)
+			{
+				//Update counters
+				EV_passenger_count = EV_passenger_count - EV1DOWN_array[target_floor].passenger_inside + EV1DOWN_array[target_floor].passenger_outside;
+				outside_issued_count -= EV1DOWN_array[target_floor].passenger_outside;
+				//stop elevator
+				stop_elevator(DOWN);
+			}
+			update_status();
 		}
 	}
+
 	r2.Wait();
 }
 
 int main()
 {
-	CThread t1(ReadMailbox, ACTIVE, NULL);
+	CThread t1(Elevator1Move, ACTIVE, NULL);
 	r1.Wait();
 	int i = 0;
 	int stopped_flag = 0;
 
+	int i = 0;
+	// initialize status: floor 0, going up, target floor 0
+	update_status();
+
+	/**================================================== *
+	 * ==========  Listen for Commands  ========== *
+	 * ================================================== */
+
 	while (1)
 	{
-		/*********  ELEVATOR GOING UP  **********/
 
-		while (elevator_floor < last_requested_floor) //do we need to check for elevator_direction too??
+		Message = Elevator1Mailbox.GetMessage();
+		int command_type = Message / 10;
+		int req_floor = Message % 10;
+
+		/*********  Populate Elevator Array  **********/
+		if (Message == E1_FAULT)
 		{
-			for (i = 0; i < COMMAND_SIZE; i++)
+			clear_floor_array();
+			target_floor = elevator_floor; // doing nothing in other thread
+										   // next message has to be clearing fault, dealt with in IO
+		}
+		if (Message == END_SIM)
+		{
+			clear_floor_array();
+			target_floor = 0;
+		}
+		if (elevator_floor == target_floor)
+		{
+			if (command_type == INSIDE && req_floor > elevator_floor)
 			{
-				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 1)
-				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 2))
-					stopped_flag = 1;
+				EV1UP_array[req_floor].stop = 1;
+				EV1UP_array[req_floor].passenger_inside++;
 			}
-			if (stopped_flag)
+			else if (command_type == INSIDE && req_floor < elevator_floor)
 			{
-				stop_elevator(REQ_DOWN, EV_UP);
+				EV1DOWN_array[req_floor].stop = 1;
+				EV1DOWN_array[req_floor].passenger_inside++;
 			}
-			stopped_flag = 0;
-			Sleep(1000);
-			elevator_floor++;
-			elevator_direction = 1;
+			else if (req_floor > elevator_floor)
+			{
+				EV1UP_array[req_floor].stop = 1;
+				EV1UP_array[req_floor].passenger_outside++;
+			}
+			else if (req_floor < elevator_floor)
+			{
+				EV1DOWN_array[req_floor].stop = 1;
+				EV1DOWN_array[req_floor].passenger_outside++;
+			}
+			else if (req_floor == elevator_floor)
+			{
+				// does it matter which array we populate? look @ other thread
+				elevator_direction = UP;
+				EV1UP_array[req_floor].stop = 1;
+				EV1UP_array[req_floor].passenger_outside++;
+			}
+			target_floor = req_floor;
 			update_status();
 		}
-
-		/*********  ELEVATOR GOING DOWN  **********/
-
-		while (elevator_floor > last_requested_floor)
+		//if passenger is inside
+		else if (command_type == INSIDE)
 		{
-			for (i = 0; i < COMMAND_SIZE; i++)
+			if (elevator_direction == UP)
 			{
-				// if passenger getting off (command/10 = 0) or getting on to go down (command/10 = 2)
-				if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != 1))
-					stopped_flag = 1;
+				EV1UP_array[req_floor].stop = 1;
+				EV1UP_array[req_floor].passenger_inside++;
 			}
-			if (stopped_flag)
+			else if (elevator_direction == DOWN)
 			{
-				stop_elevator(REQ_DOWN, EV_DOWN);
+				EV1DOWN_array[req_floor].stop = 1;
+				EV1DOWN_array[req_floor].passenger_inside++;
 			}
-			stopped_flag = 0;
-			Sleep(1000);
-			elevator_floor--;
-			elevator_direction = 0;
-			update_status();
 		}
-
-		/**================================================== *
-		 * ==========  Elevator at target floor  ============ *
-		 * ================================================== */
-
-		int passenger_waiting = NOONE; // 0 = no one waiting, 1 = waiting and going same direction, 2 = waiting and going opposite direction
-		if (elevator_floor == last_requested_floor)
+		//if passenger is outside and requesting to go up
+		else if (command_type == OUT_UP)
 		{
-			for (i = 0; i < COMMAND_SIZE; i++)
-			{
-				if (commands[i].valid && (elevator_floor == commands[i].command % 10))
-				{
-					// passenger(s) waiting on this floor, going same direction
-					// when they enter, last requested floor will be greater than the current one
-					// new last_request_floor will be set in the other thread
-					if ((elevator_direction && commands[i].command / 10) || (elevator_direction == 0 && commands[i].command / 10 == 2))
-					{
-						passenger_waiting = SAME_DIR;
-						break;
-					}
-					// passenger waiting on this floor, but requested the opposite direction
-					else if ((elevator_direction && commands[i].command / 10 == 2) || (elevator_direction == 0 && commands[i].command / 10))
-					{
-						//still need passengers to get off, bottom part still needs to work
-						// after we need to signal the opposite direction
-						passenger_waiting = OPP_DIR;
-					}
-				}
-			}
-
-			/*********  NO PASSENGERS  **********/
-
-			// if no passengers are waiting at this floor, then we set a new last_requested_floor
-			int largest_age = 0;
-			int largest_age_index = 0;
-			if (passenger_waiting == NOONE)
-			{
-				// opens door to let passengers out first 
-				if (elevator_direction)
-					stop_elevator(NOONE, EV_UP);
-				else
-					stop_elevator(NOONE, EV_DOWN);
-				//poll for new command
-				while (largest_age == 0)
-				{
-					for (i = 0; i < COMMAND_SIZE; i++)
-					{
-						if (commands[i].valid && commands[i].age > largest_age)
-						{
-							largest_age = commands[i].age;
-							largest_age_index = i;
-						}
-					}
-					// if largest age is 0, that means there are no valid commands in the list and elevator should be idle
-					// should it go back to middle floor?
-					if (largest_age != 0)
-					{
-						last_requested_floor = commands[largest_age_index].command % 10;
-						commands[largest_age_index].valid = 0;
-						if (last_requested_floor > elevator_floor)
-						{
-							elevator_direction = 1;
-							Sleep(1000);
-							elevator_floor++;
-							update_status();
-						}
-						else if (last_requested_floor < elevator_floor)
-						{
-							elevator_direction = 0;
-							Sleep(1000);
-							elevator_floor--;
-							update_status();
-						}
-						// what if last_requested_floor == elevator_floor 
-						// after a while, passenger arrives on the same floor
-						// open the door for them, then go to the direction they want 
-						else 
-						{
-							// passenger arrives on elevator's floor, presses up
-							if (commands[largest_age_index].command / 10) 
-							{
-								elevator_direction = 1;
-								stop_elevator(REQ_UP, EV_UP);
-								Sleep(1000);
-								elevator_floor++;
-								update_status();
-							}
-							else // command/10 == 2
-							{
-								elevator_direction = 0;
-								stop_elevator(REQ_DOWN, EV_DOWN);
-								Sleep(1000);
-								elevator_floor--;
-								update_status();
-							}
-						}
-					}
-				}
-			}
-
-			/*********  PASSENGER GOING SAME DIR  **********/
-
-			else if (passenger_waiting == SAME_DIR)
-			{
-				if (elevator_direction)
-				{ // elevator went up, passenger requesting up
-					stop_elevator(REQ_UP, EV_UP);
-					Sleep(1000);
-					elevator_floor++;
-					update_status();
-				}
-				else
-				{ // elevator went down, passenger requesting down
-					stop_elevator(REQ_DOWN, EV_DOWN);
-					Sleep(1000);
-					elevator_floor--;
-					update_status();
-				}
-			}
-
-			/*********  PASSENGER GOING OPP DIR  **********/
-
-			else if (passenger_waiting == OPP_DIR)
-			{ // passenger_waiting == 2
-				if (elevator_direction)
-				{ // elevator went up, passenger requesting down
-					elevator_direction = 0;
-					EV1_UP_SIGNAL(); // for passengers getting off
-					EV1_UP_RESET();
-					//elevator going down now and passengers getting on to go down
-					stop_elevator(REQ_DOWN, EV_DOWN);
-					Sleep(1000);
-					elevator_floor--;
-					update_status();
-				}
-				else
-				{ // elevator went down, passenger requesting up
-					elevator_direction = 1;
-					EV1_DW_SIGNAL(); // for passengers getting off
-					EV1_DW_RESET();
-					//elevator going up now and passengers getting on to go up
-					stop_elevator(REQ_UP, EV_UP);
-					Sleep(1000);
-					elevator_floor++;
-					update_status();
-				}
-			}
+			EV1UP_array[req_floor].stop = 1;
+			EV1UP_array[req_floor].passenger_outside++;
+		}
+		//if passenger is outside and requesting to go down
+		else if (command_type == OUT_DOWN)
+		{
+			EV1DOWN_array[req_floor].stop = 1;
+			EV1DOWN_array[req_floor].passenger_outside++;
+		}
+		// if message is from inside elevator (0-9) and the request exceeds the current targeted floor, set as new targeted floor
+		if ((Message < target_floor && elevator_direction == DOWN) || (Message <= 9 && Message > target_floor && elevator_direction == UP))
+		{
+			target_floor = Message;
+			update_status();
 		}
 	}
-
-	//delete[] commands;  // When done, free memory
-	//commands = NULL;
+	/* =======  End of Listen for Commands  ======= */
 
 	r2.Wait();
 	t1.WaitForThread();
@@ -286,72 +180,83 @@ int main()
 	return 0;
 }
 
-//clears command that have been consumed (e.g passenger got off, passenger got on)
-void clear_command(int requested_direction)
+void stop_elevator(int elevator_direction)
 {
-	if (requested_direction == 0) {
-		for (int i = 0; i < COMMAND_SIZE; i++)
-		{
-			if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 == requested_direction))
-			{
-				commands[i].valid = 0;
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < COMMAND_SIZE; i++)
-		{
-			if (commands[i].valid && (elevator_floor == commands[i].command % 10) && (commands[i].command / 10 != requested_direction))
-			{
-				commands[i].valid = 0;
-			}
-		}
-	}
-}
-
-//called whenever elevator stops to let passengers off or pick up passengers
-void stop_elevator(int requested_direction, int elevator_direction)
-{
-	if (elevator_direction == EV_UP)
+	if (elevator_direction == UP)
 	{
 		open_door();
 		EV1_UP_SIGNAL();
-		Sleep(2000);
-		clear_command(requested_direction);
+		Sleep(DOOR_DELAY);
 		EV1_UP_RESET();
 		close_door();
+		//clear floor struct
+		EV1UP_array[target_floor].stop = 0;
+		EV1UP_array[target_floor].passenger_inside = 0;
+		EV1UP_array[target_floor].passenger_outside = 0;
 	}
-	else if (elevator_direction == EV_DOWN)
+	else if (elevator_direction == DOWN)
 	{
 		open_door();
 		EV1_DW_SIGNAL();
-		Sleep(2000);
-		clear_command(requested_direction);
+		Sleep(DOOR_DELAY);
 		EV1_DW_RESET();
 		close_door();
+		//clear floor struct
+		EV1DOWN_array[target_floor].stop = 0;
+		EV1DOWN_array[target_floor].passenger_inside = 0;
+		EV1DOWN_array[target_floor].passenger_outside = 0;
 	}
 }
 
 void open_door()
 {
 	door1 = 1;
+	update_status();
 	cursor.Wait();
-	cout << "ElEVATOR 1 DOOR OPENED" << endl;
+	//cout << "ElEVATOR 1 DOOR OPENED" << endl;
 	cursor.Signal();
 }
 
 void close_door()
 {
 	door1 = 0;
+	update_status();
 	cursor.Wait();
-	cout << "ElEVATOR 1 DOOR CLOSED" << endl;
+	//cout << "ElEVATOR 1 DOOR CLOSED" << endl;
 	cursor.Signal();
 }
 
 void update_status()
 {
-	status = {elevator_floor, elevator_direction, last_requested_floor};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, EV1UP_array, EV1DOWN_array};
 	Elevator1Status.Update_Status(status);
+}
+
+int check_empty_array()
+{
+	int stop = 0;
+	for (int i = 0; i < NUM_FLOORS; i++)
+	{
+		if (EV1UP_array[i].stop || EV1DOWN_array[i].stop)
+		{
+			stop = 1;
+			break;
+		}
+	}
+	return stop;
+}
+
+void clear_floor_array()
+{
+	for (int i = 0; i < NUM_FLOORS, i++)
+	{
+		EV1UP_array[i].stop = 0;
+		EV1UP_array[i].passenger_inside = 0;
+		EV1UP_array[i].passenger_outside = 0;
+		EV1DOWN_array[i].stop = 0;
+		EV1DOWN_array[i].passenger_inside = 0;
+		EV1DOWN_array[i].passenger_outside = 0;
+	}
 }
 
 void EV1_UP_SIGNAL()

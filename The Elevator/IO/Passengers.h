@@ -17,7 +17,7 @@ class Passengers : public ActiveClass
 	char elevator_num;
 	int main(void)
 	{
-		CTypedPipe<pipeline_data> passengerPipe("PassengerPipeline", 1024);
+		CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
 
 		if (current_floor == 0)
 			request_direction = 'u';
@@ -35,7 +35,7 @@ class Passengers : public ActiveClass
 		}
 
 		current_floor_char = '0' + current_floor;
-		pipeline_data mystruct = {request_direction, current_floor_char};
+		command mystruct = {request_direction, current_floor_char};
 		passengerPipelineMutex.Wait();
 		passengerPipe.Write(&mystruct);
 		passengerPipelineMutex.Signal();
@@ -86,7 +86,7 @@ class Passengers : public ActiveClass
 		}
 
 		request_floor_char = '0' + request_floor;
-		pipeline_data mystruct = {elevator_num, request_floor_char};
+		command mystruct = {elevator_num, request_floor_char};
 		passengerPipelineMutex.Wait();
 		passengerPipe.Write(&mystruct);
 		passengerPipelineMutex.Signal();

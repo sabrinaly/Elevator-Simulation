@@ -4,11 +4,17 @@
 /**
 
 	TODO:
-	- max 4 passengers
-	- dispatcher algorithm
+	- max 4 passengers - RAYMOND - IMPLEMENTED
+	- dispatcher algorithm - SABRINA - IMPLEMENTED
 	- print status and other debug prints - RAYMOND - WIP
-	- elevator faults
-	- activate active objects
+		- only printing elevator status and command rn
+	- elevator faults - SABRINA - done in IO and dispatcher, not done in elevator
+		- target floor right now keeps opening/closing
+		- last_requested_floor not being set
+	- activate active objects/mode changes
+	- mailbox to end simulation - need to handle in elevator
+	- put door status in monitor? - RAYMOND - DONE
+	- move mode into status so IO can print the mode
  */
 
 #ifndef __ElevatorData__
@@ -18,22 +24,37 @@
 #include <random>
 
 #define COMMAND_SIZE 100
-#define EV_UP 1
-#define EV_DOWN 0
-#define REQ_DOWN 1
-#define REQ_UP 2
-#define NOONE 0
-#define SAME_DIR 1
-#define OPP_DIR 2
 
-struct mydatapooldata
-{					// start of structure template
-	int floor;		// floor corresponding to lifts current position
-	int direction;  // direction of travel of lift
-	int floors[10]; // an array representing the floors and whether requests are set
-};
+//Elevator Defines
+#define DOWN 0
+#define UP 1
+#define IDLE 2
+#define INSIDE 0
+#define OUT_UP 1
+#define OUT_DOWN 2
 
-struct pipeline_data
+//Dispatcher Defines
+#define DIS_E1 0
+#define DIS_E2 1
+#define DIS_OUT_UP 2
+#define DIS_OUT_DOWN 3
+
+//Faults Defines
+#define END_SIM 95
+#define E1_FAULT 96
+#define E1_CLEAR 97
+#define E2_FAULT 98
+#define E2_CLEAR 99
+
+#define MAX_PASSENGERS 4
+#define MANUAL_MODE 0
+#define ACTIVE_MODE 1
+
+#define NUM_FLOORS 10
+#define DOOR_DELAY 2000
+#define MOVE_DELAY 1000
+
+struct command
 {
 	char x;
 	char y;
@@ -44,9 +65,36 @@ struct elevator_status
 	int floor;	 // floor corresponding to lifts current position
 	int direction; // direction of travel of lift
 	int target_floor;
+	int passenger_count;
+	int door;
+	floor_struct UP_array[10];
+	floor_struct DOWN_array[10];
 };
 
-int floors = 10;
+struct command_struct
+{
+	int command = 0;
+	int valid = 0;
+	int age = 0;
+} c;
+
+struct floor_struct
+{
+	int stop = 0;
+	int passenger_inside = 0;
+	int passenger_outside = 0;
+};
+
+floor_struct EV1UP_array[10];
+floor_struct EV1DOWN_array[10];
+floor_struct EV2UP_array[10];
+floor_struct EV2DOWN_array[10];
+
+int EV_passenger_count;
+int outside_issued_count;
+
+int mode = MANUAL_MODE;
+
 int door1 = 0; // 1 = open, 0 = close
 int door2 = 0;
 /* struct dispatcher_status
