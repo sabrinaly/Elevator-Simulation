@@ -178,7 +178,20 @@ int main()
 			cout << "Received command: " << input1 << input2 << endl;
 			cursor.Signal();
 		}
+
+		if (EndSimMailbox.TestForMessage())
+		{
+			cursor.Wait();
+			MOVE_CURSOR(0, 0);
+			cout << "END OF SIMULATION" << endl;
+			cursor.Signal();
+			break;
+		}
 	}
+
+	Elevator1.~CThread();
+	Elevator2.~CThread();
+	Passenger.~CThread();
 
 	r2.Wait();
 

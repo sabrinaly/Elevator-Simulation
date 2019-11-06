@@ -10,7 +10,7 @@
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
 	- activate active objects/mode changes
-	- mailbox to end simulation
+	- mailbox to end simulation - WIP
 		- make doors open when simulation ends
 		- post back to IO to indicate end of simulation
 	- put door status in monitor? - RAYMOND - DONE
@@ -134,6 +134,7 @@ int debug = 0;
 
 CMailbox Elevator1Mailbox;
 CMailbox Elevator2Mailbox;
+CMailbox EndSimMailbox;
 
 CDataPool *Elevator1StatusDataPool;
 CDataPool *Elevator2StatusDataPool;
