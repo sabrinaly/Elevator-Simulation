@@ -113,7 +113,7 @@ int main()
 		/**================================================== *
 		 * ==========  Section Populate Elevator Array  ========== *
 		 * ================================================== */
-		cout << Message << endl;
+		cout << "Message Received: " << Message << endl;
 		if (Message == E1_FAULT)
 		{
 			clear_floor_array();
@@ -140,6 +140,7 @@ int main()
 		{
 			clear_floor_array();
 			target_floor = elevator_floor;
+			cout << "target floor setting to " << elevator_floor << endl;
 			update_status();
 		}
 		else if (Message == END_PASSENGERS)
@@ -345,6 +346,9 @@ void clear_floor_array()
 		EV1DOWN_array[i].passenger_inside = 0;
 		EV1DOWN_array[i].passenger_outside = 0;
 	}
+	// if fault or changing mode, clear passengers from inside 
+	EV_passenger_count = 0;
+	update_status();
 }
 
 void EV1_UP_SIGNAL()

@@ -345,6 +345,9 @@ void clear_floor_array()
 		EV2DOWN_array[i].passenger_inside = 0;
 		EV2DOWN_array[i].passenger_outside = 0;
 	}
+	// if fault or changing mode, clear passengers from inside 
+	EV_passenger_count = 0;
+	update_status();
 }
 
 void EV2_UP_SIGNAL()

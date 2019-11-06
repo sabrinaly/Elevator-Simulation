@@ -234,8 +234,8 @@ int main()
 			// starting/ending active passengers
 			else if (command_array[COMMAND_SIZE - 2].command == START_PASSENGERS || command_array[COMMAND_SIZE - 2].command == END_PASSENGERS)
 			{
-				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
-				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				Elevator1.Post(command_array[COMMAND_SIZE - 2].command);
+				Elevator2.Post(command_array[COMMAND_SIZE - 2].command);
 				empty_command_array();
 			}
 
