@@ -7,7 +7,7 @@
 //Function Headers
 int check_max_passenger(int, int);
 void increment_passenger(int, int);
-int find_largest_age_index();
+int find_largest_age_index(int);
 void save_command(int);
 
 command mystruct;
@@ -113,20 +113,20 @@ UINT __stdcall ReadPipeline(void *args)
 
 int main()
 {
-
-	CProcess Elevator1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
+	
+	CProcess Elevator1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess Elevator2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
+	CProcess Elevator2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess IO("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+	CProcess IO("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
 				NORMAL_PRIORITY_CLASS,																									   // priority
 				OWN_WINDOW,																												   // process has its own window
 				ACTIVE);
@@ -150,6 +150,9 @@ int main()
 		// 0-9 = E1 inside, 10-19 = E2 inside, 20-29 = outside up, 30-39 = outside down
 		for (int i = 0; i < COMMAND_SIZE; i++)
 		{
+			command_type = command_array[i].command / 10;
+			command_floor = command_array[i].command % 10;
+
 			command_type = command_array[i].command / 10;
 			command_floor = command_array[i].command % 10;
 
@@ -195,23 +198,30 @@ int main()
 			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
-			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor)
-			{
+			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor) {
 				int largest_age_index = 0;
 				int largest_age = 0;
+				int largest_age_command_type = 0;
+				int largest_age_command_floor = 0;
 				while (largest_age == 0)
 				{
-					largest_age_index = find_largest_age_index();
+					largest_age_index = find_largest_age_index(4); // command / 10 != 4 -> any commands
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid)
-						{
-							// E1 is closer
-							if (abs(command_floor - E1_status.floor) <= abs(command_floor - E2_status.floor))
-								Elevator1.Post(command_array[largest_age_index].command);
+						{	
+							largest_age_command_type = command_array[largest_age_index].command / 10;
+							largest_age_command_floor = command_array[largest_age_index].command % 10;
+							if (largest_age_command_type == DIS_E1)
+								Elevator1.Post(command_array[largest_age_index].command % 10);
+							else if (largest_age_command_type == DIS_E2)
+								Elevator2.Post(command_array[largest_age_index].command % 10);
+							// E1 is closer, u or d
+							else if (abs(largest_age_command_floor - E1_status.floor) <= abs(largest_age_command_floor - E2_status.floor))
+								Elevator1.Post(command_array[largest_age_index].command - 10);
 							else
-								Elevator2.Post(command_array[largest_age_index].command);
+								Elevator2.Post(command_array[largest_age_index].command - 10);
 						}
 						command_array[largest_age_index].valid = 0;
 					}
@@ -221,17 +231,21 @@ int main()
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
+				int largest_age_command_type = 0;
 				while (largest_age == 0)
 				{
-					largest_age_index = find_largest_age_index();
+					largest_age_index = find_largest_age_index(1); // command / 10 != 1 -> any commands except E2
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
-						if (command_array[largest_age_index].valid)
-						{
+						if (command_array[largest_age_index].valid){
+							largest_age_command_type = command_array[largest_age_index].command / 10;
 							if (debug)
 								cout << "Posting to EV1" << endl;
-							Elevator1.Post(command_array[largest_age_index].command);
+							if (largest_age_command_type == DIS_E1)
+								Elevator1.Post(command_array[largest_age_index].command % 10);
+							else
+								Elevator1.Post(command_array[largest_age_index].command - 10);
 						}
 						command_array[largest_age_index].valid = 0;
 					}
@@ -241,17 +255,22 @@ int main()
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
+				int largest_age_command_type = 0;
 				while (largest_age == 0)
 				{
-					largest_age_index = find_largest_age_index();
+					largest_age_index = find_largest_age_index(0); // command / 10 != 0 -> any commands except E1
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid)
 						{
+							largest_age_command_type = command_array[largest_age_index].command / 10;
 							if (debug)
 								cout << "Posting to EV2" << endl;
-							Elevator2.Post(command_array[largest_age_index].command);
+							if (largest_age_command_type == DIS_E2)
+								Elevator2.Post(command_array[largest_age_index].command % 10);
+							else 
+								Elevator2.Post(command_array[largest_age_index].command - 10);
 						}
 						command_array[largest_age_index].valid = 0;
 					}
@@ -434,14 +453,14 @@ void save_command(int command)
 	}
 }
 
-int find_largest_age_index()
+int find_largest_age_index(int command_type)
 {
 	int largest_age = 0;
 	int largest_age_index = 0;
 
 	for (int i = 0; i < COMMAND_SIZE; i++)
 	{
-		if (command_array[i].valid && command_array[i].age > largest_age)
+		if (command_array[i].valid && command_array[i].age > largest_age && (command_array[i].command / 10 != command_type))
 		{
 			largest_age = command_array[i].age;
 			largest_age_index = i;

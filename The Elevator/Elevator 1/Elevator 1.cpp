@@ -63,7 +63,7 @@ UINT __stdcall Elevator1Move(void *args)
 					// do nothing
 				}
 			}
-			if (elevator_direction == UP)
+			else if (elevator_direction == UP)
 			{
 				//Update counters
 				EV_passenger_count = EV_passenger_count - EV1UP_array[target_floor].passenger_inside + EV1UP_array[target_floor].passenger_outside;
