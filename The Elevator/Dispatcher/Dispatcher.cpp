@@ -8,6 +8,7 @@
 int check_max_passenger(int, int);
 void increment_passenger(int, int);
 int find_largest_age_index(int);
+int find_closest_index(int, int);
 void save_command(int);
 
 command mystruct;
@@ -58,7 +59,13 @@ UINT __stdcall ReadPipeline(void *args)
 
 		int command_floor = mystruct.y - '0';
 		// start active passengers
-		if (mystruct.x == 'd' && mystruct.y == '+')
+		if (E1_status.fault && mystruct.x == '1') {
+			// do nothing, don't save in array
+		}
+		else if (E2_status.fault && mystruct.x == '2') {
+			// do nothing, don't save in array
+		}
+		else if (mystruct.x == 'd' && mystruct.y == '+')
 		{
 		}
 		// end active passengers
@@ -115,19 +122,19 @@ UINT __stdcall ReadPipeline(void *args)
 int main()
 {
 
-	CProcess Elevator1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
+	CProcess Elevator1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess Elevator2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
+	CProcess Elevator2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess IO("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+	CProcess IO("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
 				NORMAL_PRIORITY_CLASS,																									   // priority
 				OWN_WINDOW,																												   // process has its own window
 				ACTIVE);
@@ -213,10 +220,46 @@ int main()
 
 			/* =======  End of FAULTS  ======= */
 
+			// EV1 fault, E2 going up, command on the way to E2
+			else if (E1_status.fault && (E2_status.direction && E2_status.floor <= command_floor && E2_status.target_floor >= command_floor)) {
+				if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
+				{
+					command_array[i].valid = 0;
+					Elevator2.Post(Message);
+				}
+				// else leave in array
+			}
+			// EV1 fault, E2 going down, command on the way to E2
+			else if (E1_status.fault && (E2_status.direction == DOWN && E2_status.floor >= command_floor && E2_status.target_floor <= command_floor)) {
+				if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
+				{
+					command_array[i].valid = 0;
+					Elevator2.Post(Message);
+				}
+			}
+			// EV2 fault, E1 going up, command on the way to E1
+			else if (E2_status.fault && (E1_status.direction && E1_status.floor <= command_floor && E1_status.target_floor >= command_floor)) {
+				if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
+				{
+					command_array[i].valid = 0;
+					Elevator1.Post(Message);
+				}
+			}
+			// EV2 fault, E1 going down, command on the way to E1
+			else if (E2_status.fault && (E1_status.direction == DOWN && E1_status.floor >= command_floor && E1_status.target_floor <= command_floor)) {
+				if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
+				{
+					command_array[i].valid = 0;
+					Elevator1.Post(Message);
+				}
+			}
+
+
 			/**================================================== *
 			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
+			// go to passenger waiting first
 			// both elevators idle
 			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor)
 			{
@@ -491,6 +534,24 @@ void save_command(int command)
 			break;
 		}
 	}
+}
+
+int find_closest_index(int floor, int type) {
+	int closest = 15;
+	int closest_index = 100; // max index is 99
+	// if we end with 100, nothing in array
+
+	for (int i = 0; i < COMMAND_SIZE; i++) {
+		int command_type = command_array[i].command / 10;
+		int command_floor = command_array[i].command % 10;
+		if (command_array[i].valid && command_type != type) {
+			if (abs(floor - command_floor) < closest) {
+				closest = abs(floor - command_floor);
+				closest_index = i;
+			}
+		}
+	}
+	return closest_index;
 }
 
 int find_largest_age_index(int command_type)
