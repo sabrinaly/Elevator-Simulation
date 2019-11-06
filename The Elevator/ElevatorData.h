@@ -17,6 +17,8 @@
 	- put door status in monitor? - RAYMOND - DONE
 	- move mode into status so IO can print the mode
 
+	- Each elevator should freeze its actions immediately upon receipt of a simulated fault condition, and should ignore subsequent commands except a command to end the simulation, or clear the fault.
+
 
 	Debugging:
 		- stop not being printed - RESOLVED - cannot put arrays in datapool
