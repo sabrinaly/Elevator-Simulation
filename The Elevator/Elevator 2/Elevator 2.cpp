@@ -24,11 +24,12 @@ int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 int end_sim = 0;
 int fault = 0;
+int destroy = 0;
 
 UINT __stdcall Elevator2Move(void *args)
 {
 	r1.Wait();
-	while (1)
+	while (!destroy)
 	{
 
 		/*********  ELEVATOR GOING UP  **********/
@@ -100,7 +101,7 @@ UINT __stdcall Elevator2Move(void *args)
 
 int main()
 {
-	CThread t1(Elevator2Move, ACTIVE, NULL);
+	CThread t2(Elevator2Move, ACTIVE, NULL);
 	r1.Wait();
 
 	int stopped_flag = 0;
@@ -234,10 +235,11 @@ int main()
 	}
 	/* =======  End of Listen for Commands  ======= */
 	EV2SimFinished.Wait();
+	destroy = 1;
 
 	cout << "End of Simulation" << endl;
-	t1.~CThread();
-	t1.WaitForThread();
+	//t2.~CThread();
+	//t2.WaitForThread();
 
 	cout << "Waiting for r2" << endl;
 	r2.Wait();

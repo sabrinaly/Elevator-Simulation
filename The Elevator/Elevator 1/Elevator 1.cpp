@@ -24,15 +24,16 @@ int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 int end_sim = 0;
 int fault = 0;
+int destroy = 0;
 
 UINT __stdcall Elevator1Move(void *args)
 {
 	r1.Wait();
-	while (1)
+	while (!destroy)
 	{
 
 		/*********  ELEVATOR GOING UP  **********/
-		while (elevator_floor < target_floor)
+		while (elevator_floor < target_floor && !destroy)
 		{
 			elevator_direction = UP;
 			if (EV1UP_array[elevator_floor].stop)
@@ -45,7 +46,7 @@ UINT __stdcall Elevator1Move(void *args)
 			update_status();
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
-		while (elevator_floor > target_floor)
+		while (elevator_floor > target_floor && !destroy)
 		{
 			elevator_direction = DOWN;
 			if (EV1DOWN_array[elevator_floor].stop)
@@ -73,12 +74,7 @@ UINT __stdcall Elevator1Move(void *args)
 			{
 				while (check_empty_array() == 0)
 				{
-					/* //if floor array is empty and it is end of sim, open_door
-					if (end_sim && elevator_floor == 0)
-					{
-						cout << "Reached here" << endl;
-						open_door();
-					} */
+					// do nothing
 				}
 			}
 			else if (elevator_direction == UP)
@@ -236,8 +232,9 @@ int main()
 	EV1SimFinished.Wait();
 
 	cout << "End of Simulation" << endl;
-	t1.~CThread();
-	t1.WaitForThread();
+	destroy = 1;
+	//t1.~CThread();
+	//t1.WaitForThread();
 
 	cout << "Waiting for r2" << endl;
 	r2.Wait();

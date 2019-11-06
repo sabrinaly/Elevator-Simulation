@@ -20,13 +20,15 @@ elevator_status E2_status;
 int passenger_inside_count = 0;
 int passenger_outside_count = 0;
 
+int destroy = 0;
+
 command_struct *command_array = new command_struct[COMMAND_SIZE];
 
 UINT __stdcall DispatcherStatusElevator1(void *args)
 {
 	ElevatorStatus Elevator1Status("Elevator1");
 	r1.Wait();
-	while (1)
+	while (!destroy)
 	{
 		E1_status = Elevator1Status.Dispatcher_Get_Elevator_Status();
 	}
@@ -38,7 +40,7 @@ UINT __stdcall DispatcherStatusElevator2(void *args)
 {
 	ElevatorStatus Elevator2Status("Elevator2");
 	r1.Wait();
-	while (1)
+	while (!destroy)
 	{
 		E2_status = Elevator2Status.Dispatcher_Get_Elevator_Status();
 	}
@@ -54,7 +56,7 @@ UINT __stdcall ReadPipeline(void *args)
 {
 	r1.Wait();
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024); // pipeline from IO with keyboard command_array
-	while (1)
+	while (!destroy)
 	{
 		dispatcherPipe.Read(&mystruct);
 
@@ -696,15 +698,16 @@ int main()
 	/* =======  End of Dispatcher  ======= */
 	cout << "End of Dispatcher" << endl;
 
-	Elevator1Status.~CThread();
+	/* Elevator1Status.~CThread();
 	Elevator2Status.~CThread();
-	ReadPipeline.~CThread();
+	ReadPipeline.~CThread(); */
+	destroy = 1;
 	IO.Post(END_SIM);
 	cout << "SENT END_SIM MSG -->" << endl;
 
-	Elevator1Status.WaitForThread();
+	/* Elevator1Status.WaitForThread();
 	Elevator2Status.WaitForThread();
-	ReadPipeline.WaitForThread();
+	ReadPipeline.WaitForThread(); */
 	// cout << "Waiting for r2" << endl;
 	r2.Wait();
 	Elevator1.WaitForProcess();

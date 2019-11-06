@@ -140,7 +140,7 @@ int mode = MANUAL_MODE;
 int door1 = 0; // 1 = open, 0 = close
 int door2 = 0;
 
-int debug = 1;
+int debug = 0;
 
 //CEvent EV1SimFinished("EV1SimFinished");
 //CEvent EV2SimFinished("EV2SimFinished");

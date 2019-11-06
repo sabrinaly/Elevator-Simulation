@@ -23,6 +23,7 @@ command passengerstruct;
 command pipeline1struct;
 
 int create_pass_flag = 0;
+int destroy = 0;
 
 elevator_status E1_status;
 elevator_status E2_status;
@@ -39,14 +40,7 @@ UINT __stdcall IOStatusElevator1(void *args)
 	cursor.Signal();
 
 	r1.Wait();
-	if (debug)
-	{
-		cursor.Wait();
-		MOVE_CURSOR(0, 30);
-		cout << "Elevator1 Status THREAD created" << endl;
-		cursor.Signal();
-	}
-	while (1)
+	while (!destroy)
 	{
 		E1_status = Elevator1Status.IO_Get_Elevator_Status();
 		cursor.Wait();
@@ -79,14 +73,7 @@ UINT __stdcall IOStatusElevator2(void *args)
 	cursor.Signal();
 
 	r1.Wait();
-	if (debug)
-	{
-		cursor.Wait();
-		MOVE_CURSOR(0, 31);
-		cout << "Elevator2 Status THREAD created" << endl;
-		cursor.Signal();
-	}
-	while (1)
+	while (!destroy)
 	{
 		E2_status = Elevator2Status.IO_Get_Elevator_Status();
 		cursor.Wait();
@@ -114,7 +101,7 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 	r1.Wait();
 	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
-	while (1)
+	while (!destroy)
 	{
 		passengerPipe.Read(&passengerstruct);
 		pipelineMutex.Wait();
@@ -136,9 +123,9 @@ UINT __stdcall CreatePassenger(void *args)
 	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 
-	while (1)
+	while (!destroy)
 	{
-		while (create_pass_flag == 1)
+		while (create_pass_flag == 1 && !destroy)
 		{
 			//find space in array
 			for (int i = 0; i < NUM_PASSENGERS; i++)
@@ -226,31 +213,33 @@ int main()
 			UINT Message = EndSimMailbox.GetMessage();
 			if (Message == END_SIM)
 			{
-				cursor.Wait();
 				MOVE_CURSOR(0, 0);
 				cout << "RECEIVED END MESSAGE ... " << endl;
-				cursor.Signal();
 				break;
 			}
 		}
 	}
 
-	Elevator1.~CThread();
+	cout << "Destroying Threads" << endl;
+
+	/* Elevator1.~CThread();
 	Elevator2.~CThread();
 	Passenger.~CThread();
-	InitializePassenger.~CThread();
+	InitializePassenger.~CThread(); */
+	destroy = 1;
 
-	Elevator1.WaitForThread();
+	cout << "Wait for Threads" << endl;
+
+	/* Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
 	Passenger.WaitForThread();
-	InitializePassenger.WaitForThread();
+	InitializePassenger.WaitForThread(); */
 
-	cursor.Wait();
-	CLEAR_SCREEN();
+	cout << "Threads Killed" << endl;
+
 	MOVE_CURSOR(0, 0);
 	cout << "END OF SIMULATION!! "
 		 << "Press enter to close simulation ..." << endl;
-	cursor.Signal();
 
 	getchar();
 
