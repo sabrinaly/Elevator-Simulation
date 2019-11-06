@@ -53,7 +53,6 @@ UINT __stdcall IOStatusElevator1(void *args)
 		cursor.Signal();
 	}
 
-	r2.Wait();
 	return 0;
 }
 
@@ -86,7 +85,6 @@ UINT __stdcall IOStatusElevator2(void *args)
 		cout.flush();
 		cursor.Signal();
 	}
-	r2.Wait();
 	return 0;
 }
 
@@ -105,7 +103,6 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 		cout << "Received passenger command: " << passengerstruct.x << passengerstruct.y << endl;
 		cursor.Signal();
 	}
-	r2.Wait();
 	return 0;
 }
 
@@ -133,57 +130,57 @@ int main()
 			dispatcherPipe.Write(&pipeline1struct);
 			pipelineMutex.Signal();
 
-			if (input1 == '-' && input2 == '1')
-			{
-				cursor.Wait();
-				MOVE_CURSOR(0, 0);
-				cout << "Received command: " << input1 << input2 << endl;
-				cursor.Signal();
-				/* while (1)
-				{
-					if (TEST_FOR_KEYBOARD())
-					{
-						input1 = _getch();
-						input2 = _getch();
-						if (input1 == '+' && input2 == '1')
-						{
-							cursor.Wait();
-							MOVE_CURSOR(0, 0);
-							cout << "Received command: " << input1 << input2 << endl;
-							cursor.Signal();
-							pipeline1struct = {input1, input2};
-							pipelineMutex.Wait();
-							dispatcherPipe.Write(&pipeline1struct);
-							pipelineMutex.Signal();
-							break;
-						}
-					}
-				} */
-			}
+			// if (input1 == '-' && input2 == '1')
+			// {
+			// 	cursor.Wait();
+			// 	MOVE_CURSOR(0, 0);
+			// 	cout << "Received command: " << input1 << input2 << endl;
+			// 	cursor.Signal();
+			// 	/* while (1)
+			// 	{
+			// 		if (TEST_FOR_KEYBOARD())
+			// 		{
+			// 			input1 = _getch();
+			// 			input2 = _getch();
+			// 			if (input1 == '+' && input2 == '1')
+			// 			{
+			// 				cursor.Wait();
+			// 				MOVE_CURSOR(0, 0);
+			// 				cout << "Received command: " << input1 << input2 << endl;
+			// 				cursor.Signal();
+			// 				pipeline1struct = {input1, input2};
+			// 				pipelineMutex.Wait();
+			// 				dispatcherPipe.Write(&pipeline1struct);
+			// 				pipelineMutex.Signal();
+			// 				break;
+			// 			}
+			// 		}
+			// 	} */
+			// }
 
-			if (input1 == '-' && input2 == '2')
-			{
-				cursor.Wait();
-				MOVE_CURSOR(0, 0);
-				cout << "Received command: " << input1 << input2 << endl;
-				cursor.Signal();
-				/* while (1)
-				{
-					if (TEST_FOR_KEYBOARD())
-					{
-						input1 = _getch();
-						input2 = _getch();
-						if (input1 == '+' && input2 == '2')
-						{
-							pipeline1struct = {input1, input2};
-							pipelineMutex.Wait();
-							dispatcherPipe.Write(&pipeline1struct);
-							pipelineMutex.Signal();
-							break;
-						}
-					}
-				} */
-			}
+			// if (input1 == '-' && input2 == '2')
+			// {
+			// 	cursor.Wait();
+			// 	MOVE_CURSOR(0, 0);
+			// 	cout << "Received command: " << input1 << input2 << endl;
+			// 	cursor.Signal();
+			// 	/* while (1)
+			// 	{
+			// 		if (TEST_FOR_KEYBOARD())
+			// 		{
+			// 			input1 = _getch();
+			// 			input2 = _getch();
+			// 			if (input1 == '+' && input2 == '2')
+			// 			{
+			// 				pipeline1struct = {input1, input2};
+			// 				pipelineMutex.Wait();
+			// 				dispatcherPipe.Write(&pipeline1struct);
+			// 				pipelineMutex.Signal();
+			// 				break;
+			// 			}
+			// 		}
+			// 	} */
+			// }
 
 			cursor.Wait();
 			MOVE_CURSOR(0, 0);
@@ -193,11 +190,15 @@ int main()
 
 		if (EndSimMailbox.TestForMessage())
 		{
-			cursor.Wait();
-			MOVE_CURSOR(0, 0);
-			cout << "END OF SIMULATION" << endl;
-			cursor.Signal();
-			break;
+			UINT Message = EndSimMailbox.GetMessage();
+			if (Message == END_SIM)
+			{
+				cursor.Wait();
+				MOVE_CURSOR(0, 0);
+				cout << "END OF SIMULATION" << endl;
+				cursor.Signal();
+				break;
+			}
 		}
 	}
 
@@ -205,11 +206,22 @@ int main()
 	Elevator2.~CThread();
 	Passenger.~CThread();
 
-	r2.Wait();
-
 	Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
 	Passenger.WaitForThread();
+
+	cursor.Wait();
+	CLEAR_SCREEN();
+	MOVE_CURSOR(0, 0);
+	cout << "threads ended" << endl;
+	cout << "END OF SIMULATION2" << endl;
+	cout << "Press enter to close simulation ..." << endl;
+	cursor.Signal();
+
+	getchar();
+
+	cout << "Waiting for r2" << endl;
+	r2.Wait();
 
 	return 0;
 }

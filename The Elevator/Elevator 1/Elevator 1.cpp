@@ -85,7 +85,7 @@ UINT __stdcall Elevator1Move(void *args)
 		}
 	}
 
-	r2.Wait();
+	return 0;
 }
 
 int main()
@@ -129,6 +129,7 @@ int main()
 			target_floor = 0;
 			end_sim = 1;
 			fault = 1;
+			cout << "Received END_SIM" << endl;
 			update_status();
 			break;
 			// TODO: open doors
@@ -204,11 +205,12 @@ int main()
 	}
 	/* =======  End of Listen for Commands  ======= */
 
+	cout << "End of Simulation" << endl;
 	t1.~CThread();
-
-	r2.Wait();
 	t1.WaitForThread();
 
+	cout << "Waiting for r2" << endl;
+	r2.Wait();
 	return 0;
 }
 

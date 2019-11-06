@@ -205,7 +205,7 @@ CCondition EV2_DW8("EV2_DW8");
 CCondition EV2_DW9("EV2_DW9");
 
 CRendezvous r1("StartRendezvous", 12);
-CRendezvous r2("EndRendezvous", 12);
+CRendezvous r2("EndRendezvous", 3);
 
 CMutex cursor("Cursor");
 CMutex passengerPipelineMutex("PassengerMutex");
