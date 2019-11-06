@@ -23,7 +23,7 @@ int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 
-UINT __stdcall Elevator2Move(void *args)
+UINT __stdcall Elevator2Move(void* args)
 {
 	r1.Wait();
 	while (1)
