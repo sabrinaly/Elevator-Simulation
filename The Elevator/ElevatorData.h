@@ -10,14 +10,15 @@
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
 	- activate active objects/mode changes
-	- mailbox to end simulation - IMPLEMENTED
+	- mailbox to end simulation
 		- make doors open when simulation ends
+		- post back to IO to indicate end of simulation
 	- put door status in monitor? - RAYMOND - DONE
 	- move mode into status so IO can print the mode
 
 
 	Debugging:
-		- stop not being set because of mailbox message suspend
+		- stop not being printed - RESOLVED - cannot put arrays in datapool
  */
 
 #ifndef __ElevatorData__
@@ -70,6 +71,34 @@ struct floor_struct
 	int passenger_outside = 0;
 };
 
+struct UP_struct
+{
+	floor_struct s0;
+	floor_struct s1;
+	floor_struct s2;
+	floor_struct s3;
+	floor_struct s4;
+	floor_struct s5;
+	floor_struct s6;
+	floor_struct s7;
+	floor_struct s8;
+	floor_struct s9;
+};
+
+struct DOWN_struct
+{
+	floor_struct s0;
+	floor_struct s1;
+	floor_struct s2;
+	floor_struct s3;
+	floor_struct s4;
+	floor_struct s5;
+	floor_struct s6;
+	floor_struct s7;
+	floor_struct s8;
+	floor_struct s9;
+};
+
 struct elevator_status
 {
 	int floor = 0;		// floor corresponding to lifts current position
@@ -77,8 +106,8 @@ struct elevator_status
 	int target_floor = 0;
 	int passenger_count = 0;
 	int door = 0;
-	floor_struct UP_array[10];
-	floor_struct DOWN_array[10];
+	UP_struct UP_array;
+	DOWN_struct DOWN_array;
 };
 
 struct command_struct
@@ -170,8 +199,8 @@ CCondition EV2_DW7("EV2_DW7");
 CCondition EV2_DW8("EV2_DW8");
 CCondition EV2_DW9("EV2_DW9");
 
-CRendezvous r1("StartRendezvous", 11);
-CRendezvous r2("EndRendezvous", 11);
+CRendezvous r1("StartRendezvous", 12);
+CRendezvous r2("EndRendezvous", 12);
 
 CMutex cursor("Cursor");
 CMutex passengerPipelineMutex("PassengerMutex");

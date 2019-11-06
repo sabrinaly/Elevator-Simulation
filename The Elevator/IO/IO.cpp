@@ -5,7 +5,8 @@
 #include <ElevatorStatus.h>
 
 //Function Headers
-void print_floor_array(floor_struct floor_array[10]);
+void print_UP_array(UP_struct);
+void print_DOWN_array(DOWN_struct);
 void print_door(int);
 
 command passengerstruct;
@@ -18,8 +19,21 @@ UINT __stdcall IOStatusElevator1(void *args)
 {
 	//Direction (up/down), General Status (in/out of service), Door Status (open/closed), Current Floor Number
 	ElevatorStatus Elevator1Status("Elevator1");
+
+	Sleep(5000);
+
+	cursor.Wait();
+	CURSOR_OFF();
+	cursor.Signal();
+
 	r1.Wait();
-	Sleep(300);
+	if (debug)
+	{
+		cursor.Wait();
+		MOVE_CURSOR(0, 30);
+		cout << "Elevator1 Status THREAD created" << endl;
+		cursor.Signal();
+	}
 	while (1)
 	{
 		E1_status = Elevator1Status.IO_Get_Elevator_Status();
@@ -32,9 +46,9 @@ UINT __stdcall IOStatusElevator1(void *args)
 			 << "passenger count: " << E1_status.passenger_count << endl;
 		print_door(E1_status.door);
 		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(E1_status.UP_array);
+		print_UP_array(E1_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(E1_status.DOWN_array);
+		print_DOWN_array(E1_status.DOWN_array);
 		cout.flush();
 		cursor.Signal();
 	}
@@ -47,7 +61,13 @@ UINT __stdcall IOStatusElevator2(void *args)
 {
 	ElevatorStatus Elevator2Status("Elevator2");
 	r1.Wait();
-	Sleep(500);
+	if (debug)
+	{
+		cursor.Wait();
+		MOVE_CURSOR(0, 31);
+		cout << "Elevator2 Status THREAD created" << endl;
+		cursor.Signal();
+	}
 	while (1)
 	{
 		E2_status = Elevator2Status.IO_Get_Elevator_Status();
@@ -60,9 +80,9 @@ UINT __stdcall IOStatusElevator2(void *args)
 			 << "passenger count: " << E2_status.passenger_count << endl;
 		print_door(E2_status.door);
 		cout << "... UP ARRAY ..." << endl;
-		print_floor_array(E2_status.UP_array);
+		print_UP_array(E2_status.UP_array);
 		cout << "... DOWN ARRAY ..." << endl;
-		print_floor_array(E2_status.DOWN_array);
+		print_DOWN_array(E2_status.DOWN_array);
 		cout.flush();
 		cursor.Signal();
 	}
@@ -169,30 +189,93 @@ int main()
 	return 0;
 }
 
-void print_floor_array(floor_struct floor_array[10])
+void print_UP_array(UP_struct floor_array)
 {
 	// stop: [ 0 0 0 0 ]
-	cout << "stop: [ ";
-	for (int i = 0; i < NUM_FLOORS; i++)
-	{
-		cout << floor_array[i].stop << " ";
-	}
+	cout << "stop:    [ ";
+	cout << floor_array.s0.stop << " ";
+	cout << floor_array.s1.stop << " ";
+	cout << floor_array.s2.stop << " ";
+	cout << floor_array.s3.stop << " ";
+	cout << floor_array.s4.stop << " ";
+	cout << floor_array.s5.stop << " ";
+	cout << floor_array.s6.stop << " ";
+	cout << floor_array.s7.stop << " ";
+	cout << floor_array.s8.stop << " ";
+	cout << floor_array.s9.stop << " ";
 	cout << "]" << endl;
 
 	// passenger_inside: [ 0 0 0 0 ]
-	cout << "inside: [ ";
-	for (int i = 0; i < NUM_FLOORS; i++)
-	{
-		cout << floor_array[i].passenger_inside << " ";
-	}
+	cout << "inside:  [ ";
+	cout << floor_array.s0.passenger_inside << " ";
+	cout << floor_array.s1.passenger_inside << " ";
+	cout << floor_array.s2.passenger_inside << " ";
+	cout << floor_array.s3.passenger_inside << " ";
+	cout << floor_array.s4.passenger_inside << " ";
+	cout << floor_array.s5.passenger_inside << " ";
+	cout << floor_array.s6.passenger_inside << " ";
+	cout << floor_array.s7.passenger_inside << " ";
+	cout << floor_array.s8.passenger_inside << " ";
+	cout << floor_array.s9.passenger_inside << " ";
 	cout << "]" << endl;
 
 	// passenger_outside: [ 0 0 0 0 ]
 	cout << "outside: [ ";
-	for (int i = 0; i < NUM_FLOORS; i++)
-	{
-		cout << floor_array[i].passenger_outside << " ";
-	}
+	cout << floor_array.s0.passenger_outside << " ";
+	cout << floor_array.s1.passenger_outside << " ";
+	cout << floor_array.s2.passenger_outside << " ";
+	cout << floor_array.s3.passenger_outside << " ";
+	cout << floor_array.s4.passenger_outside << " ";
+	cout << floor_array.s5.passenger_outside << " ";
+	cout << floor_array.s6.passenger_outside << " ";
+	cout << floor_array.s7.passenger_outside << " ";
+	cout << floor_array.s8.passenger_outside << " ";
+	cout << floor_array.s9.passenger_outside << " ";
+	cout << "]" << endl;
+}
+
+void print_DOWN_array(DOWN_struct floor_array)
+{
+	// stop: [ 0 0 0 0 ]
+	cout << "stop:    [ ";
+	cout << floor_array.s0.stop << " ";
+	cout << floor_array.s1.stop << " ";
+	cout << floor_array.s2.stop << " ";
+	cout << floor_array.s3.stop << " ";
+	cout << floor_array.s4.stop << " ";
+	cout << floor_array.s5.stop << " ";
+	cout << floor_array.s6.stop << " ";
+	cout << floor_array.s7.stop << " ";
+	cout << floor_array.s8.stop << " ";
+	cout << floor_array.s9.stop << " ";
+	cout << "]" << endl;
+
+	// passenger_inside: [ 0 0 0 0 ]
+	cout << "inside:  [ ";
+	cout << floor_array.s0.passenger_inside << " ";
+	cout << floor_array.s1.passenger_inside << " ";
+	cout << floor_array.s2.passenger_inside << " ";
+	cout << floor_array.s3.passenger_inside << " ";
+	cout << floor_array.s4.passenger_inside << " ";
+	cout << floor_array.s5.passenger_inside << " ";
+	cout << floor_array.s6.passenger_inside << " ";
+	cout << floor_array.s7.passenger_inside << " ";
+	cout << floor_array.s8.passenger_inside << " ";
+	cout << floor_array.s9.passenger_inside << " ";
+	cout << "]" << endl;
+
+	// passenger_outside: [ 0 0 0 0 ]
+	cout << "outside: [ ";
+	cout << floor_array.s0.passenger_outside << " ";
+	cout << floor_array.s1.passenger_outside << " ";
+	cout << floor_array.s2.passenger_outside << " ";
+	cout << floor_array.s3.passenger_outside << " ";
+	cout << floor_array.s4.passenger_outside << " ";
+	cout << floor_array.s5.passenger_outside << " ";
+	cout << floor_array.s6.passenger_outside << " ";
+	cout << floor_array.s7.passenger_outside << " ";
+	cout << floor_array.s8.passenger_outside << " ";
+	cout << floor_array.s9.passenger_outside << " ";
 	cout << "]" << endl;
 }
 

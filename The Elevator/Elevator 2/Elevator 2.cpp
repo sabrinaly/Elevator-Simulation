@@ -56,11 +56,15 @@ UINT __stdcall Elevator2Move(void *args)
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
 		if (elevator_floor == target_floor)
 		{
-			while (check_empty_array() == 0)
+			if (check_empty_array() == 0)
 			{
-				// do nothing
+				while (check_empty_array() == 0)
+				{
+					// do nothing
+				}
+				cout << "new target floor: " << target_floor << endl;
 			}
-			if (elevator_direction == UP)
+			else if (elevator_direction == UP)
 			{
 				//Update counters
 				EV_passenger_count = EV_passenger_count - EV2UP_array[target_floor].passenger_inside + EV2UP_array[target_floor].passenger_outside;
@@ -88,10 +92,6 @@ int main()
 	CThread t2(Elevator2Move, ACTIVE, NULL);
 	r1.Wait();
 
-	cursor.Wait();
-	MOVE_CURSOR(0, 0);
-	cout << "ELEVATOR2 CREATED" << endl;
-	cursor.Signal();
 	int stopped_flag = 0;
 
 	// initialize status: floor 0, going up, target floor 0
@@ -130,21 +130,25 @@ int main()
 			{
 				EV2UP_array[req_floor].stop = 1;
 				EV2UP_array[req_floor].passenger_inside++;
+				target_floor = req_floor;
 			}
 			else if (command_type == INSIDE && req_floor < elevator_floor)
 			{
 				EV2DOWN_array[req_floor].stop = 1;
 				EV2DOWN_array[req_floor].passenger_inside++;
+				target_floor = req_floor;
 			}
 			else if (req_floor > elevator_floor)
 			{
 				EV2UP_array[req_floor].stop = 1;
 				EV2UP_array[req_floor].passenger_outside++;
+				target_floor = req_floor;
 			}
 			else if (req_floor < elevator_floor)
 			{
 				EV2DOWN_array[req_floor].stop = 1;
 				EV2DOWN_array[req_floor].passenger_outside++;
+				target_floor = req_floor;
 			}
 			else if (req_floor == elevator_floor)
 			{
@@ -152,8 +156,8 @@ int main()
 				elevator_direction = UP;
 				EV2UP_array[req_floor].stop = 1;
 				EV2UP_array[req_floor].passenger_outside++;
+				target_floor = req_floor;
 			}
-			target_floor = req_floor;
 			update_status();
 		}
 		//if passenger is inside
@@ -185,7 +189,6 @@ int main()
 		// if message is from inside elevator (0-9) and the request exceeds the current targeted floor, set as new targeted floor
 		if ((Message < target_floor && elevator_direction == DOWN) || (Message <= 9 && Message > target_floor && elevator_direction == UP))
 		{
-			target_floor = Message;
 			update_status();
 		}
 	}
@@ -245,7 +248,32 @@ void close_door()
 
 void update_status()
 {
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door2, *EV2UP_array, *EV2DOWN_array};
+	UP_struct UP_array;
+	DOWN_struct DOWN_array;
+
+	UP_array.s0 = EV2UP_array[0];
+	UP_array.s1 = EV2UP_array[1];
+	UP_array.s2 = EV2UP_array[2];
+	UP_array.s3 = EV2UP_array[3];
+	UP_array.s4 = EV2UP_array[4];
+	UP_array.s5 = EV2UP_array[5];
+	UP_array.s6 = EV2UP_array[6];
+	UP_array.s7 = EV2UP_array[7];
+	UP_array.s8 = EV2UP_array[8];
+	UP_array.s9 = EV2UP_array[9];
+
+	DOWN_array.s0 = EV2DOWN_array[0];
+	DOWN_array.s1 = EV2DOWN_array[1];
+	DOWN_array.s2 = EV2DOWN_array[2];
+	DOWN_array.s3 = EV2DOWN_array[3];
+	DOWN_array.s4 = EV2DOWN_array[4];
+	DOWN_array.s5 = EV2DOWN_array[5];
+	DOWN_array.s6 = EV2DOWN_array[6];
+	DOWN_array.s7 = EV2DOWN_array[7];
+	DOWN_array.s8 = EV2DOWN_array[8];
+	DOWN_array.s9 = EV2DOWN_array[9];
+
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door2, UP_array, DOWN_array};
 	Elevator2Status.Update_Status(status);
 }
 

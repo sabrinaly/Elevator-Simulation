@@ -6,6 +6,7 @@
 
 //Function Headers
 int check_max_passenger(int, int);
+void increment_passenger(int, int);
 int find_largest_age_index();
 void save_command(int);
 
@@ -13,6 +14,9 @@ command mystruct;
 
 elevator_status E1_status;
 elevator_status E2_status;
+
+int passenger_inside_count = 0;
+int passenger_outside_count = 0;
 
 command_struct *command_array = new command_struct[COMMAND_SIZE];
 
@@ -146,12 +150,15 @@ int main()
 		// 0-9 = E1 inside, 10-19 = E2 inside, 20-29 = outside up, 30-39 = outside down
 		for (int i = 0; i < COMMAND_SIZE; i++)
 		{
+			command_type = command_array[i].command / 10;
+			command_floor = command_array[i].command % 10;
 
 			/**================================================== *
 			 * ==========  FAULTS  ========== *
 			 * ================================================== */
 
 			// TODO: what if passengers are stuck inside during fault
+			// faults are stored in index 99
 			if (command_array[COMMAND_SIZE - 1].command == E1_FAULT)
 			{
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
@@ -184,17 +191,36 @@ int main()
 
 			/* =======  End of FAULTS  ======= */
 
-			command_type = command_array[i].command / 10;
-			command_floor = command_array[i].command % 10;
-
 			/**================================================== *
-			 * ==========  Outside Elevator, Up Input  ========== *
+			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
-			int largest_age_index = 0;
-			int largest_age = 0;
-			if (E1_status.target_floor == E1_status.floor)
+			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor)
 			{
+				int largest_age_index = 0;
+				int largest_age = 0;
+				while (largest_age == 0)
+				{
+					largest_age_index = find_largest_age_index();
+					largest_age = command_array[largest_age_index].age;
+					if (largest_age != 0)
+					{
+						if (command_array[largest_age_index].valid)
+						{
+							// E1 is closer
+							if (abs(command_floor - E1_status.floor) <= abs(command_floor - E2_status.floor))
+								Elevator1.Post(command_array[largest_age_index].command);
+							else
+								Elevator2.Post(command_array[largest_age_index].command);
+						}
+						command_array[largest_age_index].valid = 0;
+					}
+				}
+			}
+			else if (E1_status.target_floor == E1_status.floor)
+			{
+				int largest_age_index = 0;
+				int largest_age = 0;
 				while (largest_age == 0)
 				{
 					largest_age_index = find_largest_age_index();
@@ -213,6 +239,8 @@ int main()
 			}
 			else if (E2_status.target_floor == E2_status.floor)
 			{
+				int largest_age_index = 0;
+				int largest_age = 0;
 				while (largest_age == 0)
 				{
 					largest_age_index = find_largest_age_index();
@@ -229,6 +257,12 @@ int main()
 					}
 				}
 			}
+			/* =======  End of EV Reached Target Floor  ======= */
+
+			/**================================================== *
+			 * ==========  Outside Elevator, Up Input  ========== *
+			 * ================================================== */
+
 			else if (command_type == DIS_OUT_UP && command_array[i].valid)
 			{
 				Message = 10 + command_floor; // 10-19 for up
@@ -360,49 +394,7 @@ int main()
 				// leave in command_array
 			}
 		}
-
 		/* =======  End of Inside Elevator  ======= */
-
-		/**================================================== *
-		 * ==========  Section EV Reached Target Floor  ========== *
-		 * ================================================== */
-
-		// if elevator reached target floor, issue new command from array
-		// TODO: ?? will there be passengers waiting on this floor
-
-		/*
-		int largest_age_index = 0;
-		int largest_age = 0;
-		if (E1_status.target_floor == E1_status.floor)
-		{
-			while (largest_age == 0)
-			{
-				largest_age_index = find_largest_age_index();
-				largest_age = command_array[largest_age_index].age;
-				if (largest_age != 0)
-				{
-					command_array[largest_age_index].valid = 0;
-					cout << "Posting to EV1" << endl;
-					Elevator1.Post(command_array[largest_age_index].command);
-				}
-			}
-		}
-		else if (E2_status.target_floor == E2_status.floor)
-		{
-			while (largest_age == 0)
-			{
-				largest_age_index = find_largest_age_index();
-				largest_age = command_array[largest_age_index].age;
-				if (largest_age != 0)
-				{
-					command_array[largest_age_index].valid = 0;
-					cout << "Posting to EV2" << endl;
-					Elevator2.Post(command_array[largest_age_index].command);
-				}
-			}
-		}
-		*/
-		/* =======  End of EV Reached Target Floor  ======= */
 	}
 
 	/* =======  End of Dispatcher  ======= */
@@ -460,16 +452,14 @@ int find_largest_age_index()
 
 int check_max_passenger(int req_floor, int elevator_num)
 {
-	int passenger_inside_count = 0;
-	int passenger_outside_count = 0;
 	if (elevator_num = DIS_E1)
+
 	{
 		if (E1_status.direction == UP)
 		{
 			for (int i = E1_status.floor; i < req_floor; i++)
 			{
-				passenger_inside_count += E1_status.UP_array[i].passenger_inside;
-				passenger_outside_count += E1_status.UP_array[i].passenger_outside;
+				increment_passenger(i, UP);
 			}
 			if ((E1_status.passenger_count + passenger_outside_count - passenger_inside_count) < MAX_PASSENGERS)
 				return 1;
@@ -480,8 +470,7 @@ int check_max_passenger(int req_floor, int elevator_num)
 		{
 			for (int i = E1_status.floor; i > req_floor; i--)
 			{
-				passenger_inside_count += E1_status.DOWN_array[i].passenger_inside;
-				passenger_outside_count += E1_status.DOWN_array[i].passenger_outside;
+				increment_passenger(i, DOWN);
 			}
 			if ((E1_status.passenger_count + passenger_outside_count - passenger_inside_count) < MAX_PASSENGERS)
 				return 1;
@@ -495,8 +484,7 @@ int check_max_passenger(int req_floor, int elevator_num)
 		{
 			for (int i = E2_status.floor; i < req_floor; i++)
 			{
-				passenger_inside_count += E2_status.UP_array[i].passenger_inside;
-				passenger_outside_count += E2_status.UP_array[i].passenger_outside;
+				increment_passenger(i, UP);
 			}
 			if ((E2_status.passenger_count + passenger_outside_count - passenger_inside_count) < MAX_PASSENGERS)
 				return 1;
@@ -507,13 +495,122 @@ int check_max_passenger(int req_floor, int elevator_num)
 		{
 			for (int i = E2_status.floor; i > req_floor; i--)
 			{
-				passenger_inside_count += E2_status.DOWN_array[i].passenger_inside;
-				passenger_outside_count += E2_status.DOWN_array[i].passenger_outside;
+				increment_passenger(i, DOWN);
 			}
 			if ((E2_status.passenger_count + passenger_outside_count - passenger_inside_count) < MAX_PASSENGERS)
 				return 1;
 			else
 				return 0;
+		}
+	}
+}
+
+void increment_passenger(int i, int direction)
+{
+	if (direction == UP)
+	{
+		if (i == 0)
+		{
+			passenger_inside_count += E1_status.UP_array.s0.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s0.passenger_outside;
+		}
+		else if (i == 1)
+		{
+			passenger_inside_count += E1_status.UP_array.s1.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s1.passenger_outside;
+		}
+		else if (i == 2)
+		{
+			passenger_inside_count += E1_status.UP_array.s2.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s2.passenger_outside;
+		}
+		else if (i == 3)
+		{
+			passenger_inside_count += E1_status.UP_array.s3.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s3.passenger_outside;
+		}
+		else if (i == 4)
+		{
+			passenger_inside_count += E1_status.UP_array.s4.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s4.passenger_outside;
+		}
+		else if (i == 5)
+		{
+			passenger_inside_count += E1_status.UP_array.s5.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s5.passenger_outside;
+		}
+		else if (i == 6)
+		{
+			passenger_inside_count += E1_status.UP_array.s6.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s6.passenger_outside;
+		}
+		else if (i == 7)
+		{
+			passenger_inside_count += E1_status.UP_array.s7.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s7.passenger_outside;
+		}
+		else if (i == 8)
+		{
+			passenger_inside_count += E1_status.UP_array.s8.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s8.passenger_outside;
+		}
+		else if (i == 9)
+		{
+			passenger_inside_count += E1_status.UP_array.s9.passenger_inside;
+			passenger_outside_count += E1_status.UP_array.s9.passenger_outside;
+		}
+	}
+	else if (direction == DOWN)
+	{
+		if (i == 0)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s0.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s0.passenger_outside;
+		}
+		else if (i == 1)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s1.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s1.passenger_outside;
+		}
+		else if (i == 2)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s2.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s2.passenger_outside;
+		}
+		else if (i == 3)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s3.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s3.passenger_outside;
+		}
+		else if (i == 4)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s4.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s4.passenger_outside;
+		}
+		else if (i == 5)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s5.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s5.passenger_outside;
+		}
+		else if (i == 6)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s6.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s6.passenger_outside;
+		}
+		else if (i == 7)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s7.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s7.passenger_outside;
+		}
+		else if (i == 8)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s8.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s8.passenger_outside;
+		}
+		else if (i == 9)
+		{
+			passenger_inside_count += E1_status.DOWN_array.s9.passenger_inside;
+			passenger_outside_count += E1_status.DOWN_array.s9.passenger_outside;
 		}
 	}
 }
