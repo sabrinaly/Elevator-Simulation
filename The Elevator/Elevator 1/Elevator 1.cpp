@@ -35,25 +35,26 @@ UINT __stdcall Elevator1Move(void *args)
 		/*********  ELEVATOR GOING UP  **********/
 		while (elevator_floor < target_floor)
 		{
+			elevator_direction = UP;
 			if (EV1UP_array[elevator_floor].stop)
 			{
 				stop_elevator(UP);
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor++;
-			elevator_direction = UP;
+			//elevator_direction = UP;
 			update_status();
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
 		while (elevator_floor > target_floor)
 		{
+			elevator_direction = DOWN;
 			if (EV1DOWN_array[elevator_floor].stop)
 			{
 				stop_elevator(DOWN);
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor--;
-			elevator_direction = DOWN;
 			update_status();
 		}
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
@@ -137,14 +138,17 @@ int main()
 		}
 		else if (elevator_floor == target_floor)
 		{
+			cout << "Target Floor" << endl;
 			if (command_type == INSIDE && req_floor > elevator_floor)
 			{
+				cout << "Target Floor UP" << endl;
 				EV1UP_array[req_floor].stop = 1;
 				EV1UP_array[req_floor].passenger_inside++;
 				target_floor = req_floor;
 			}
 			else if (command_type == INSIDE && req_floor < elevator_floor)
 			{
+				cout << "Target Floor DOWN" << endl;
 				EV1DOWN_array[req_floor].stop = 1;
 				EV1DOWN_array[req_floor].passenger_inside++;
 				target_floor = req_floor;
@@ -173,13 +177,16 @@ int main()
 		//if passenger is inside
 		else if (command_type == INSIDE)
 		{
+			cout << "INSIDE" << endl;
 			if (elevator_direction == UP)
 			{
+				cout << "INSIDE UP" << endl;
 				EV1UP_array[req_floor].stop = 1;
 				EV1UP_array[req_floor].passenger_inside++;
 			}
 			else if (elevator_direction == DOWN)
 			{
+				cout << "INSIDE DOWN" << endl;
 				EV1DOWN_array[req_floor].stop = 1;
 				EV1DOWN_array[req_floor].passenger_inside++;
 			}
@@ -223,32 +230,34 @@ void stop_elevator(int elevator_direction)
 	if (elevator_direction == UP)
 	{
 		open_door();
-		//Update counters
-		EV_passenger_count = EV_passenger_count - EV1UP_array[target_floor].passenger_inside + EV1UP_array[target_floor].passenger_outside;
-		outside_issued_count -= EV1UP_array[target_floor].passenger_outside;
 		EV1_UP_SIGNAL();
 		Sleep(DOOR_DELAY);
 		EV1_UP_RESET();
 		close_door();
+		//Update counters
+		EV_passenger_count = EV_passenger_count - EV1UP_array[elevator_floor].passenger_inside + EV1UP_array[elevator_floor].passenger_outside;
+		outside_issued_count -= EV1UP_array[elevator_floor].passenger_outside;
 		//clear floor struct
 		EV1UP_array[elevator_floor].stop = 0;
 		EV1UP_array[elevator_floor].passenger_inside = 0;
 		EV1UP_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 	else if (elevator_direction == DOWN)
 	{
 		open_door();
-		//Update counters
-		EV_passenger_count = EV_passenger_count - EV1DOWN_array[target_floor].passenger_inside + EV1DOWN_array[target_floor].passenger_outside;
-		outside_issued_count -= EV1DOWN_array[target_floor].passenger_outside;
 		EV1_DW_SIGNAL();
 		Sleep(DOOR_DELAY);
 		EV1_DW_RESET();
 		close_door();
+		//Update counters
+		EV_passenger_count = EV_passenger_count - EV1DOWN_array[elevator_floor].passenger_inside + EV1DOWN_array[elevator_floor].passenger_outside;
+		outside_issued_count -= EV1DOWN_array[elevator_floor].passenger_outside;
 		//clear floor struct
 		EV1DOWN_array[elevator_floor].stop = 0;
 		EV1DOWN_array[elevator_floor].passenger_inside = 0;
 		EV1DOWN_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 }
 

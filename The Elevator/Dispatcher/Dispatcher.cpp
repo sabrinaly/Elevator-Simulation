@@ -17,6 +17,8 @@ command mystruct;
 elevator_status E1_status;
 elevator_status E2_status;
 
+int mode = ACTIVE_MODE;
+
 int passenger_inside_count = 0;
 int passenger_outside_count = 0;
 
@@ -348,6 +350,26 @@ int main()
 			}
 
 			/**================================================== *
+			 * ==========  Inside Elevator  ========== *
+			 * ================================================== */
+
+			else if ((command_type == DIS_E1 && command_array[i].valid == 1) || (command_type == DIS_E2 && command_array[i].valid == 1))
+			{
+				if (command_type == DIS_E1)
+				{
+					command_array[i].valid = 0;
+					Elevator1.Post(command_floor);
+				}
+				else
+				{
+					command_array[i].valid = 0;
+					cout << "EV2 POST17" << endl;
+					Elevator2.Post(command_floor);
+				}
+			}
+			/* =======  End of Inside Elevator  ======= */
+
+			/**================================================== *
 			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
@@ -382,12 +404,14 @@ int main()
 							// E1 is closer, u or d
 							else if (abs(largest_age_command_floor - E1_status.floor) <= abs(largest_age_command_floor - E2_status.floor))
 							{
-								Elevator1.Post(command_array[largest_age_index].command - 10);
+								if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
+									Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 							else
 							{
 								cout << "EV2 POST10" << endl;
-								Elevator2.Post(command_array[largest_age_index].command - 10);
+								if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
+									Elevator2.Post(command_array[largest_age_index].command - 10);
 							}
 						}
 						command_array[largest_age_index].valid = 0;
@@ -417,7 +441,8 @@ int main()
 							}
 							else
 							{
-								Elevator1.Post(command_array[largest_age_index].command - 10);
+								if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
+									Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 						}
 						command_array[largest_age_index].valid = 0;
@@ -448,8 +473,11 @@ int main()
 							}
 							else
 							{
-								cout << "EV2 POST12" << endl;
-								Elevator2.Post(command_array[largest_age_index].command - 10);
+								cout << "EV2 POST12"
+									 << " " << largest_age_index << " " << command_array[largest_age_index].command << endl;
+								//getchar();
+								if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
+									Elevator2.Post(command_array[largest_age_index].command - 10);
 							}
 						}
 						command_array[largest_age_index].valid = 0;
@@ -575,29 +603,10 @@ int main()
 
 			/* =======  End of Outside Elevator, Down Input  ======= */
 
-			/**================================================== *
-			 * ==========  Inside Elevator  ========== *
-			 * ================================================== */
-
-			else if ((command_type == DIS_E1 && command_array[i].valid == 1) || (command_type == DIS_E2 && command_array[i].valid == 1))
-			{
-				if (command_type == DIS_E1)
-				{
-					command_array[i].valid = 0;
-					Elevator1.Post(command_floor);
-				}
-				else
-				{
-					command_array[i].valid = 0;
-					cout << "EV2 POST17" << endl;
-					Elevator2.Post(command_floor);
-				}
-			}
 			else
 			{
 				// leave in command_array
 			}
-			/* =======  End of Inside Elevator  ======= */
 		}
 		/* =======  End of Command Search  ======= */
 		if (end_sim)
@@ -704,7 +713,6 @@ void empty_command_array()
 int check_max_passenger(int req_floor, int elevator_num)
 {
 	if (elevator_num = DIS_E1)
-
 	{
 		if (E1_status.direction == UP)
 		{

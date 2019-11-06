@@ -7,7 +7,10 @@
 #include "C:\RTExamples\rt.h"
 #include <ElevatorData.h>
 #include <random>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 class Passengers : public ActiveClass
 {
 	int current_floor;
@@ -16,8 +19,11 @@ class Passengers : public ActiveClass
 	int request_floor;
 	char request_floor_char;
 	char elevator_num;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 	int main(void)
 	{
 		CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
@@ -37,7 +43,10 @@ class Passengers : public ActiveClass
 				request_direction = 'd';
 		}
 
+<<<<<<< HEAD
 		current_floor_char = '0' + current_floor;
+=======
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 		command mystruct = {request_direction, current_floor_char};
 		passengerPipelineMutex.Wait();
 		passengerPipe.Write(&mystruct);
@@ -58,6 +67,19 @@ class Passengers : public ActiveClass
 					elevator_num = '2';
 					break;
 				}
+<<<<<<< HEAD
+=======
+				if (EV1_DW_WAIT(current_floor))
+				{
+					elevator_num = '1';
+					break;
+				}
+				if (EV2_DW_WAIT(current_floor))
+				{
+					elevator_num = '2';
+					break;
+				}
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 			}
 			//randomize which floor passenger wants to go to
 			random_device rd;
@@ -80,6 +102,19 @@ class Passengers : public ActiveClass
 					elevator_num = '2';
 					break;
 				}
+<<<<<<< HEAD
+=======
+				if (EV1_UP_WAIT(current_floor))
+				{
+					elevator_num = '1';
+					break;
+				}
+				if (EV2_UP_WAIT(current_floor))
+				{
+					elevator_num = '2';
+					break;
+				}
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 			}
 			//randomize which floor passenger wants to go to
 			random_device rd;
@@ -138,10 +173,23 @@ public:
 		mt19937 eng(rd());
 		uniform_int_distribution<> distr(0, 9);
 		current_floor = distr(eng);
+<<<<<<< HEAD
 		cursor.Wait();
 		MOVE_CURSOR(0, 0);
 		cout << "current_floor: " << current_floor << endl;
 		cursor.Signal();
+=======
+		current_floor_char = '0' + current_floor;
+		request_direction = 'u';
+		request_floor = 0;
+		request_floor_char = '0';
+		elevator_num = '1';
+
+		/* cursor.Wait();
+		MOVE_CURSOR(40, 0);
+		cout << "TEST" << endl;
+		cursor.Signal(); */
+>>>>>>> 373594cc1871ab42e82247c3089a5bb1a9921941
 	}
 
 	~Passengers() {}
