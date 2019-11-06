@@ -158,7 +158,7 @@ int main()
 
 			cursor.Wait();
 			MOVE_CURSOR(0, 0);
-			cout << "Received command: " << input1 << input2 << endl;
+			cout << "Received command: " << input1 << input2 << "          \n";
 			cursor.Signal();
 		}
 

@@ -437,6 +437,8 @@ int main()
 				{
 					largest_age_index = find_largest_age_index(1); // command / 10 != 1 -> any commands except E2
 					largest_age = command_array[largest_age_index].age;
+					int command_floor = command_array[largest_age_index].command % 10;
+					int command_type = command_array[largest_age_index].command / 10;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid == 1)
@@ -447,6 +449,13 @@ int main()
 							if (largest_age_command_type == DIS_E1)
 							{
 								Elevator1.Post(command_array[largest_age_index].command % 10);
+							}
+							// if E2 is on the way to take command
+							else if (E2_status.direction && command_floor>=E2_status.floor && command_floor<=E2_status.target_floor && command_type == DIS_OUT_UP) {
+								Elevator2.Post(command_array[largest_age_index].command - 10);
+							}
+							else if (E2_status.direction == DOWN && command_floor <= E2_status.floor && command_floor >= E2_status.target_floor && command_type == DIS_OUT_DOWN) {
+								Elevator2.Post(command_array[largest_age_index].command - 10);
 							}
 							else
 							{
@@ -468,6 +477,8 @@ int main()
 				{
 					largest_age_index = find_largest_age_index(0); // command / 10 != 0 -> any commands except E1
 					largest_age = command_array[largest_age_index].age;
+					int command_floor = command_array[largest_age_index].command % 10;
+					int command_type = command_array[largest_age_index].command / 10;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid == 1)
@@ -479,6 +490,13 @@ int main()
 							{
 								cout << "EV2 POST11" << endl;
 								Elevator2.Post(command_array[largest_age_index].command % 10);
+							}
+							// if E1 is on the way to take command
+							else if (E1_status.direction && command_floor >= E1_status.floor && command_floor <= E1_status.target_floor && command_type == DIS_OUT_UP) {
+								Elevator1.Post(command_array[largest_age_index].command - 10);
+							}
+							else if (E1_status.direction == DOWN && command_floor <= E1_status.floor && command_floor >= E1_status.target_floor && command_type == DIS_OUT_DOWN) {
+								Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 							else
 							{
@@ -498,7 +516,7 @@ int main()
 			/**================================================== *
 			 * ==========  Outside Elevator, Up Input  ========== *
 			 * ================================================== */
-
+			
 			else if (command_type == DIS_OUT_UP && command_array[i].valid == 1)
 			{
 				Message = 10 + command_floor; // 10-19 for up
