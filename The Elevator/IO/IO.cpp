@@ -132,13 +132,14 @@ UINT __stdcall CreatePassenger(void *args)
 {
 	//Passengers *passenger_array[NUM_PASSENGERS];
 	passenger_struct passenger_array[NUM_PASSENGERS];
+	int passenger_count = 0;
 	r1.Wait();
 	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 
 	while (!destroy)
 	{
-		while (create_pass_flag == 1 && !destroy)
+		while (create_pass_flag == 1 && !destroy && passenger_count <= 15)
 		{
 			//find space in array
 			for (int i = 0; i < NUM_PASSENGERS; i++)
@@ -419,13 +420,50 @@ void print_passengers_waiting(int elevator_num)
 	//cout << "0";
 
 	cursor.Wait();
-	MOVE_CURSOR(cursor_x_up, 56 - 2 * E1_status.floor);
-	passengers_waiting_up[E1_status.floor] -= passengers1_outside_up(E1_status.floor) + passengers2_outside_up(E2_status.floor);
-	cout << passengers_waiting_up[E1_status.floor] << endl;
+	if (elevator_num == 1)
+	{
+		if (E1_status.req_direction == OUT_UP)
+		{
+			MOVE_CURSOR(cursor_x_up, 56 - 2 * E1_status.floor);
+			if (E1_status.direction == UP)
+				passengers_waiting_up[E1_status.floor] -= (passengers1_outside_up(E1_status.floor));
+			else if (E1_status.direction == DOWN)
+				passengers_waiting_up[E1_status.floor] -= (passengers1_outside_down(E1_status.floor));
+			cout << passengers_waiting_up[E1_status.floor] << endl;
+		}
 
-	MOVE_CURSOR(cursor_x_down, 56 - 2 * E1_status.floor);
-	passengers_waiting_down[E1_status.floor] -= passengers1_outside_down(E1_status.floor) + passengers2_outside_down(E2_status.floor);
-	cout << passengers_waiting_down[E1_status.floor] << endl;
+		else if (E1_status.req_direction == OUT_DOWN)
+		{
+			MOVE_CURSOR(cursor_x_down, 56 - 2 * E1_status.floor);
+			if (E1_status.direction == DOWN)
+				passengers_waiting_down[E1_status.floor] -= (passengers1_outside_down(E1_status.floor));
+			else if (E1_status.direction == UP)
+				passengers_waiting_down[E1_status.floor] -= (passengers1_outside_up(E1_status.floor));
+			cout << passengers_waiting_down[E1_status.floor] << endl;
+		}
+	}
+	else if (elevator_num == 2)
+	{
+		if (E2_status.req_direction == OUT_UP)
+		{
+			MOVE_CURSOR(cursor_x_up, 56 - 2 * E2_status.floor);
+			if (E2_status.direction == UP)
+				passengers_waiting_up[E2_status.floor] -= (passengers2_outside_up(E2_status.floor));
+			else if (E2_status.direction == DOWN)
+				passengers_waiting_up[E2_status.floor] -= (passengers2_outside_down(E2_status.floor));
+			cout << passengers_waiting_up[E2_status.floor] << endl;
+		}
+
+		else if (E2_status.req_direction == OUT_DOWN)
+		{
+			MOVE_CURSOR(cursor_x_down, 56 - 2 * E2_status.floor);
+			if (E2_status.direction == DOWN)
+				passengers_waiting_down[E2_status.floor] -= (passengers2_outside_down(E2_status.floor));
+			else if (E2_status.direction == UP)
+				passengers_waiting_down[E2_status.floor] -= (passengers2_outside_up(E2_status.floor));
+			cout << passengers_waiting_down[E2_status.floor] << endl;
+		}
+	}
 	cursor.Signal();
 
 	//if (elevator_num == 1) {

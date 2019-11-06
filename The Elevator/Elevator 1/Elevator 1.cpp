@@ -26,6 +26,7 @@ int end_sim = 0;
 int fault = 0;
 int destroy = 0;
 int changed_floor = 0;
+int req_direction = 0;
 
 UINT __stdcall Elevator1Move(void *args)
 {
@@ -117,6 +118,7 @@ int main()
 		Message = Elevator1Mailbox.GetMessage();
 		int command_type = Message / 10;
 		int req_floor = Message % 10;
+		req_direction = command_type;
 
 		/**================================================== *
 		 * ==========  Section Populate Elevator Array  ========== *
@@ -324,7 +326,7 @@ void update_status()
 	DOWN_array.s8 = EV1DOWN_array[8];
 	DOWN_array.s9 = EV1DOWN_array[9];
 
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, changed_floor, UP_array, DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, changed_floor, req_direction, UP_array, DOWN_array};
 	Elevator1Status.Update_Status(status);
 }
 
