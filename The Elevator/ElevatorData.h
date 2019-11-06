@@ -17,6 +17,7 @@
 	- mailbox to end simulation - WIP
 		- make doors open when simulation ends
 		- post back to IO to indicate end of simulation
+		- use event
 	- move mode into status so IO can print the mode
 
 	- Each elevator should freeze its actions immediately upon receipt of a simulated fault condition, and should ignore subsequent commands except a command to end the simulation, or clear the fault.
@@ -58,6 +59,7 @@
 #define E2_CLEAR 99
 
 #define MAX_PASSENGERS 4
+#define NUM_PASSENGERS 100
 #define MANUAL_MODE 0
 #define ACTIVE_MODE 1
 
@@ -208,7 +210,7 @@ CCondition EV2_DW7("EV2_DW7");
 CCondition EV2_DW8("EV2_DW8");
 CCondition EV2_DW9("EV2_DW9");
 
-CRendezvous r1("StartRendezvous", 12);
+CRendezvous r1("StartRendezvous", 13);
 CRendezvous r2("EndRendezvous", 4);
 
 CMutex cursor("Cursor");
