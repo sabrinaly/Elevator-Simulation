@@ -227,6 +227,7 @@ int main()
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				end_sim = 1;
 				// cout << "RECEIVIED END SIM" << endl;
+
 				break;
 			}
 			/* =======  End of FAULTS  ======= */
@@ -652,21 +653,24 @@ int main()
 		/* =======  End of Command Search  ======= */
 		if (end_sim)
 		{
-			while (E1_status.floor != 0 && E1_status.door != 0 && E2_status.floor != 0 && E2_status.door != 0)
+			/* while (E1_status.floor != 0 && E1_status.door != 0 && E2_status.floor != 0 && E2_status.door != 0)
 			{
-			}
-			// cout << "End of Simulation" << endl;
+			} */
+			EV1SimFinished.Wait();
+			EV2SimFinished.Wait();
+			cout << "End of Simulation" << endl;
 			break;
 		}
 	}
 
 	/* =======  End of Dispatcher  ======= */
-	// cout << "End of Dispatcher" << endl;
+	cout << "End of Dispatcher" << endl;
 
 	Elevator1Status.~CThread();
 	Elevator2Status.~CThread();
 	ReadPipeline.~CThread();
 	IO.Post(END_SIM);
+	cout << "SENT END_SIM MSG -->" << endl;
 
 	Elevator1Status.WaitForThread();
 	Elevator2Status.WaitForThread();

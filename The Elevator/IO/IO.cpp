@@ -13,6 +13,12 @@ void print_door(int);
 void print_elevator_base();
 void print_elevator_move(int, int, int);
 
+struct passenger_struct
+{
+	Passengers *passenger;
+	int valid = 0;
+};
+
 command passengerstruct;
 command pipeline1struct;
 
@@ -67,6 +73,11 @@ UINT __stdcall IOStatusElevator1(void *args)
 UINT __stdcall IOStatusElevator2(void *args)
 {
 	ElevatorStatus Elevator2Status("Elevator2");
+
+	cursor.Wait();
+	CURSOR_OFF();
+	cursor.Signal();
+
 	r1.Wait();
 	if (debug)
 	{
@@ -119,8 +130,8 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 
 UINT __stdcall CreatePassenger(void *args)
 {
-	Passengers *passenger_array[NUM_PASSENGERS];
-	int i = 0;
+	//Passengers *passenger_array[NUM_PASSENGERS];
+	passenger_struct passenger_array[NUM_PASSENGERS];
 	r1.Wait();
 	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
@@ -129,17 +140,32 @@ UINT __stdcall CreatePassenger(void *args)
 	{
 		while (create_pass_flag == 1)
 		{
-			passenger_array[i] = new Passengers;
-			passenger_array[i]->Resume();
-			i++;
-			Sleep(1000);
+			//find space in array
+			for (int i = 0; i < NUM_PASSENGERS; i++)
+			{
+				if (passenger_array[i].valid == 0)
+				{
+					passenger_array[i].passenger = new Passengers;
+					passenger_array[i].passenger->Resume();
+					passenger_array[i].valid = 1;
+					break;
+				}
+			}
+			random_device rd;
+			mt19937 eng(rd());
+			uniform_int_distribution<> distr(1000, 1500);
+			Sleep(distr(eng));
 		}
 
 		if (create_pass_flag == 2)
 		{
-			for (int j = 0; j < NUM_PASSENGERS; j++)
+			for (int i = 0; i < NUM_PASSENGERS; i++)
 			{
-				delete passenger_array[j];
+				if (passenger_array[i].valid == 1)
+				{
+					delete passenger_array[i].passenger;
+					passenger_array[i].valid = 0;
+				}
 			}
 		}
 	}
@@ -200,10 +226,10 @@ int main()
 			UINT Message = EndSimMailbox.GetMessage();
 			if (Message == END_SIM)
 			{
-				/* cursor.Wait();
+				cursor.Wait();
 				MOVE_CURSOR(0, 0);
-				cout << "END OF SIMULATION" << endl;
-				cursor.Signal(); */
+				cout << "RECEIVED END MESSAGE ... " << endl;
+				cursor.Signal();
 				break;
 			}
 		}

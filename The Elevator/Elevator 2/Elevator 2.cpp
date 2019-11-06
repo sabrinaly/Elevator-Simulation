@@ -23,7 +23,6 @@ int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 int end_sim = 0;
-int done = 0;
 int fault = 0;
 
 UINT __stdcall Elevator2Move(void *args)
@@ -60,17 +59,26 @@ UINT __stdcall Elevator2Move(void *args)
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
 		if (elevator_floor == target_floor)
 		{
-			if (check_empty_array() == 0)
+			if (end_sim)
+			{
+				if (elevator_floor == 0)
+				{
+					cout << "Reached here" << endl;
+					open_door();
+					EV2SimFinished.Signal();
+					EV2SimFinished.Signal();
+				}
+			}
+			else if (check_empty_array() == 0)
 			{
 				while (check_empty_array() == 0)
 				{
-					//if floor array is empty and it is end of sim, open_door
+					/* //if floor array is empty and it is end of sim, open_door
 					if (end_sim && elevator_floor == 0)
 					{
 						cout << "Reached here" << endl;
 						open_door();
-						done = 1;
-					}
+					} */
 				}
 			}
 			else if (elevator_direction == UP)
@@ -113,7 +121,7 @@ int main()
 		/**================================================== *
 		 * ==========  Section Populate Elevator Array  ========== *
 		 * ================================================== */
-		cout << Message << endl;
+		cout << "Message Received: " << Message << endl;
 		if (Message == E2_FAULT)
 		{
 			clear_floor_array();
@@ -127,11 +135,12 @@ int main()
 		}
 		else if (Message == END_SIM)
 		{
-			clear_floor_array();
 			target_floor = 0;
 			end_sim = 1;
 			fault = 1;
 			cout << "Received END_SIM" << endl;
+			clear_floor_array();
+			EV2DOWN_array[0].stop = 1;
 			update_status();
 			break;
 			// TODO: open doors
@@ -140,6 +149,7 @@ int main()
 		{
 			clear_floor_array();
 			target_floor = elevator_floor;
+			cout << "target floor setting to " << elevator_floor << endl;
 			update_status();
 		}
 		else if (Message == END_PASSENGERS)
@@ -223,10 +233,7 @@ int main()
 		update_status();
 	}
 	/* =======  End of Listen for Commands  ======= */
-	while (done == 0)
-	{
-		//do nothing
-	}
+	EV2SimFinished.Wait();
 
 	cout << "End of Simulation" << endl;
 	t1.~CThread();
@@ -345,7 +352,7 @@ void clear_floor_array()
 		EV2DOWN_array[i].passenger_inside = 0;
 		EV2DOWN_array[i].passenger_outside = 0;
 	}
-	// if fault or changing mode, clear passengers from inside 
+	// if fault or changing mode, clear passengers from inside
 	EV_passenger_count = 0;
 	update_status();
 }

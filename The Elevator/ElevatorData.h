@@ -142,6 +142,12 @@ int door2 = 0;
 
 int debug = 0;
 
+//CEvent EV1SimFinished("EV1SimFinished");
+//CEvent EV2SimFinished("EV2SimFinished");
+
+CSemaphore EV1SimFinished("EV1SimFinished", 0, 2); // semaphore with initial value 0 and max value 2
+CSemaphore EV2SimFinished("EV2SimFinished", 0, 2); // semaphore with initial value 0 and max value 2
+
 CMailbox Elevator1Mailbox;
 CMailbox Elevator2Mailbox;
 CMailbox EndSimMailbox;
