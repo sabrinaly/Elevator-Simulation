@@ -132,7 +132,6 @@
     <ClInclude Include="..\..\..\..\..\..\..\..\RTExamples\rt.h" />
     <ClInclude Include="..\ElevatorData.h" />
     <ClInclude Include="..\ElevatorStatus.h" />
-    <ClInclude Include="Passengers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

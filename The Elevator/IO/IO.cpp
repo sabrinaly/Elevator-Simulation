@@ -3,6 +3,7 @@
 #include "C:\RTExamples\rt.h"
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
+#include <Passengers.h>
 
 //Function Headers
 void print_UP_array(UP_struct);
@@ -102,6 +103,7 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 		dispatcherPipe.Write(&passengerstruct);
 		pipelineMutex.Signal();
 		cursor.Wait();
+		MOVE_CURSOR(0, 0);
 		cout << "Received passenger command: " << passengerstruct.x << passengerstruct.y << endl;
 		cursor.Signal();
 	}
@@ -116,6 +118,13 @@ int main()
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 
 	r1.Wait();
+
+	Passengers p1, p2, p3, p4, p5;
+
+	p1.Resume();
+	Sleep(1000);
+	p2.Resume();
+	//Sleep(1000);
 
 	while (1)
 	{
