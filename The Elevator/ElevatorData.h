@@ -9,6 +9,7 @@
 	- print status and other debug prints - RAYMOND - WIP
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
+		- not working need to allow other elevator operate
 	- activate active objects/mode changes
 	- mailbox to end simulation - WIP
 		- make doors open when simulation ends
@@ -106,6 +107,7 @@ struct elevator_status
 	int target_floor = 0;
 	int passenger_count = 0;
 	int door = 0;
+	int fault = 0;
 	UP_struct UP_array;
 	DOWN_struct DOWN_array;
 };

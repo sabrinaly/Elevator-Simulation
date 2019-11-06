@@ -24,6 +24,7 @@ int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 int end_sim = 0;
 int done = 0;
+int fault = 0;
 
 UINT __stdcall Elevator1Move(void *args)
 {
@@ -114,15 +115,21 @@ int main()
 		if (Message == E1_FAULT)
 		{
 			clear_floor_array();
-			cout << "setting target_floor" << elevator_floor << endl;
+			fault = 1;
 			target_floor = elevator_floor; // doing nothing in other thread
 										   // next message has to be clearing fault, dealt with in IO
+		}
+		else if (Message == E1_CLEAR)
+		{
+			fault = 0;
 		}
 		else if (Message == END_SIM)
 		{
 			clear_floor_array();
 			target_floor = 0;
 			end_sim = 1;
+			fault = 1;
+			update_status();
 			break;
 			// TODO: open doors
 		}
@@ -160,7 +167,6 @@ int main()
 				EV1UP_array[req_floor].passenger_outside++;
 				target_floor = req_floor;
 			}
-			update_status();
 		}
 		//if passenger is inside
 		else if (command_type == INSIDE)
@@ -193,7 +199,6 @@ int main()
 		if ((Message < target_floor && elevator_direction == DOWN) || (Message <= 9 && Message > target_floor && elevator_direction == UP))
 		{
 			target_floor = Message;
-			update_status();
 		}
 		update_status();
 	}
@@ -284,7 +289,7 @@ void update_status()
 	DOWN_array.s8 = EV1DOWN_array[8];
 	DOWN_array.s9 = EV1DOWN_array[9];
 
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, UP_array, DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, UP_array, DOWN_array};
 	Elevator1Status.Update_Status(status);
 }
 
