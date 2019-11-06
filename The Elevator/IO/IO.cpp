@@ -129,7 +129,7 @@ int main()
 	print_elevator_base();
 	cursor.Signal();
 
-	Passengers p1, p2, p3, p4, p5;
+	//Passengers p1, p2, p3, p4, p5;
 	/*
 	p1.Resume();
 	Sleep(1000);
