@@ -66,6 +66,7 @@ UINT __stdcall Elevator1Move(void *args)
 					//if floor array is empty and it is end of sim, open_door
 					if (end_sim && elevator_floor == 0)
 					{
+						cout << "Reached here" << endl;
 						open_door();
 						done = 1;
 					}
@@ -206,6 +207,7 @@ int main()
 	/* =======  End of Listen for Commands  ======= */
 	while (done == 0)
 	{
+		//do nothing
 	}
 
 	cout << "End of Simulation" << endl;
