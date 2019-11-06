@@ -403,6 +403,10 @@ int main()
 							largest_age_command_floor = command_array[largest_age_index].command % 10;
 							if (largest_age_command_type == DIS_E1)
 							{
+								if (debug)
+								{
+									cout << "E1 POST9" << endl;
+								}
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 								command_array[largest_age_index].valid = 0;
 							}
@@ -417,6 +421,10 @@ int main()
 							{
 								if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 								{
+									if (debug)
+									{
+										cout << "E1 POST8" << endl;
+									}
 									Elevator1.Post(command_array[largest_age_index].command - 10);
 									command_array[largest_age_index].valid = 0;
 								}
@@ -455,6 +463,10 @@ int main()
 							// cout << "Posting to EV1" << endl;
 							if (largest_age_command_type == DIS_E1)
 							{
+								if (debug)
+								{
+									cout << "E1 POST7" << endl;
+								}
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 								command_array[largest_age_index].valid = 0;
 							}
@@ -507,11 +519,21 @@ int main()
 							// if E1 is on the way to take command
 							else if (E1_status.direction && command_floor >= E1_status.floor && command_floor <= E1_status.target_floor && command_type == DIS_OUT_UP)
 							{
+								if (debug)
+								{
+									cout << "E1 POST6" << endl;
+								}
 								Elevator1.Post(command_array[largest_age_index].command - 10);
+								command_array[largest_age_index].valid = 0;
 							}
 							else if (E1_status.direction == DOWN && command_floor <= E1_status.floor && command_floor >= E1_status.target_floor && command_type == DIS_OUT_DOWN)
 							{
+								if (debug)
+								{
+									cout << "E1 POST5" << endl;
+								}
 								Elevator1.Post(command_array[largest_age_index].command - 10);
+								command_array[largest_age_index].valid = 0;
 							}
 							else
 							{
@@ -549,6 +571,10 @@ int main()
 							if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 							{
 								command_array[i].valid = 0;
+								if (debug)
+								{
+									cout << "E1 POST1" << endl;
+								}
 								Elevator1.Post(Message);
 							}
 						}
@@ -569,6 +595,10 @@ int main()
 						if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 						{
 							command_array[i].valid = 0;
+							if (debug)
+							{
+								cout << "E1 POST2" << endl;
+							}
 							Elevator1.Post(Message);
 						}
 					}
