@@ -136,6 +136,18 @@ int main()
 			break;
 			// TODO: open doors
 		}
+		else if (Message == START_PASSENGERS)
+		{
+			clear_floor_array();
+			target_floor = elevator_floor;
+			update_status();
+		}
+		else if (Message == END_PASSENGERS)
+		{
+			clear_floor_array();
+			target_floor = elevator_floor;
+			update_status();
+		}
 		//if passenger is inside
 		else if (command_type == INSIDE)
 		{

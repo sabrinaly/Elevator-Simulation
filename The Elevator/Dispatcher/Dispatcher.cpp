@@ -81,10 +81,12 @@ UINT __stdcall ReadPipeline(void *args)
 		}
 		else if (mystruct.x == 'd' && mystruct.y == '+')
 		{
+			command_array[COMMAND_SIZE - 2] = { START_PASSENGERS, 2, 0 };
 		}
 		// end active passengers
 		else if (mystruct.x == 'd' && mystruct.y == '-')
 		{
+			command_array[COMMAND_SIZE - 2] = { END_PASSENGERS, 2, 0 };
 		}
 		// elevator 1 fault occurred
 		else if (mystruct.x == '-' && mystruct.y == '1')
@@ -136,22 +138,22 @@ UINT __stdcall ReadPipeline(void *args)
 int main()
 {
 
-	CProcess Elevator1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
-					   NORMAL_PRIORITY_CLASS,																											  // priority
-					   OWN_WINDOW,																														  // process has its own window
-					   ACTIVE																															  // process is active immediately
+	CProcess Elevator1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,																											  // priority
+		OWN_WINDOW,																														  // process has its own window
+		ACTIVE																															  // process is active immediately
 	);
 
-	CProcess Elevator2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
-					   NORMAL_PRIORITY_CLASS,																											  // priority
-					   OWN_WINDOW,																														  // process has its own window
-					   ACTIVE																															  // process is active immediately
+	CProcess Elevator2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,																											  // priority
+		OWN_WINDOW,																														  // process has its own window
+		ACTIVE																															  // process is active immediately
 	);
 
-	CProcess IO("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
-				NORMAL_PRIORITY_CLASS,																									   // priority
-				OWN_WINDOW,																												   // process has its own window
-				ACTIVE);
+	CProcess IO("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+		NORMAL_PRIORITY_CLASS,																									   // priority
+		OWN_WINDOW,																												   // process has its own window
+		ACTIVE);
 
 	CThread Elevator1Status(DispatcherStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2Status(DispatcherStatusElevator2, ACTIVE, NULL);
@@ -227,8 +229,15 @@ int main()
 				// cout << "RECEIVIED END SIM" << endl;
 				break;
 			}
-
 			/* =======  End of FAULTS  ======= */
+
+			// starting/ending active passengers
+			else if (command_array[COMMAND_SIZE - 2].command == START_PASSENGERS || command_array[COMMAND_SIZE - 2].command == END_PASSENGERS) {
+				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				empty_command_array();
+			}
+
 			else if (E1_status.fault && E2_status.fault)
 			{
 				// do nothing
@@ -433,6 +442,8 @@ int main()
 				{
 					largest_age_index = find_largest_age_index(1); // command / 10 != 1 -> any commands except E2
 					largest_age = command_array[largest_age_index].age;
+					int command_floor = command_array[largest_age_index].command % 10;
+					int command_type = command_array[largest_age_index].command / 10;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid == 1)
@@ -444,6 +455,13 @@ int main()
 							{
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 								command_array[largest_age_index].valid = 0;
+							}
+							// if E2 is on the way to take command
+							else if (E2_status.direction && command_floor>=E2_status.floor && command_floor<=E2_status.target_floor && command_type == DIS_OUT_UP) {
+								Elevator2.Post(command_array[largest_age_index].command - 10);
+							}
+							else if (E2_status.direction == DOWN && command_floor <= E2_status.floor && command_floor >= E2_status.target_floor && command_type == DIS_OUT_DOWN) {
+								Elevator2.Post(command_array[largest_age_index].command - 10);
 							}
 							else
 							{
@@ -467,6 +485,8 @@ int main()
 				{
 					largest_age_index = find_largest_age_index(0); // command / 10 != 0 -> any commands except E1
 					largest_age = command_array[largest_age_index].age;
+					int command_floor = command_array[largest_age_index].command % 10;
+					int command_type = command_array[largest_age_index].command / 10;
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid == 1)
@@ -479,6 +499,13 @@ int main()
 								// cout << "EV2 POST11" << endl;
 								Elevator2.Post(command_array[largest_age_index].command % 10);
 								command_array[largest_age_index].valid = 0;
+							}
+							// if E1 is on the way to take command
+							else if (E1_status.direction && command_floor >= E1_status.floor && command_floor <= E1_status.target_floor && command_type == DIS_OUT_UP) {
+								Elevator1.Post(command_array[largest_age_index].command - 10);
+							}
+							else if (E1_status.direction == DOWN && command_floor <= E1_status.floor && command_floor >= E1_status.target_floor && command_type == DIS_OUT_DOWN) {
+								Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 							else
 							{
@@ -498,7 +525,7 @@ int main()
 			/**================================================== *
 			 * ==========  Outside Elevator, Up Input  ========== *
 			 * ================================================== */
-
+			
 			else if (command_type == DIS_OUT_UP && command_array[i].valid == 1)
 			{
 				Message = 10 + command_floor; // 10-19 for up
