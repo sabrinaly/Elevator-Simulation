@@ -73,8 +73,9 @@ UINT __stdcall ReadPipeline(void *args)
 			command_array[COMMAND_SIZE - 1] = {E1_FAULT, 2, 0};
 		}
 		// elevator 1 fault cleared
-		else if (mystruct.x == '+' && mystruct.y == '1')
-			command_array[COMMAND_SIZE - 1] = {E1_CLEAR, 2, 0};
+		else if (mystruct.x == '+' && mystruct.y == '1') {
+			command_array[COMMAND_SIZE - 1] = { E1_CLEAR, 2, 0 };
+		}
 		// elevator 2 fault occurred
 		else if (mystruct.x == '-' && mystruct.y == '2')
 			command_array[COMMAND_SIZE - 1] = {E2_FAULT, 2, 0};
@@ -174,23 +175,31 @@ int main()
 				Elevator1.Post(E1_FAULT);
 				//clear array
 				delete[] command_array;
-				command_struct *command_array = new command_struct[COMMAND_SIZE];
-				while (command_array[COMMAND_SIZE - 1].command != E1_CLEAR)
-				{
-				}
+				command_array = new command_struct[COMMAND_SIZE];
+				//while (command_array[COMMAND_SIZE - 1].command != E1_CLEAR)
+				//{
+				//}
 				//Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
-				command_array[COMMAND_SIZE - 1].command = 0;
+				//command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E2_FAULT)
 			{
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				//clear array
 				delete[] command_array;
-				command_struct *command_array = new command_struct[COMMAND_SIZE];
-				while (command_array[COMMAND_SIZE - 1].command != E2_CLEAR)
-				{
-				}
+				command_array = new command_struct[COMMAND_SIZE];
+				//while (command_array[COMMAND_SIZE - 1].command != E2_CLEAR)
+				//{
+				//}
 				//Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				//command_array[COMMAND_SIZE - 1].command = 0;
+			}
+			else if (command_array[COMMAND_SIZE - 1].command == E1_CLEAR) {
+				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				command_array[COMMAND_SIZE - 1].command = 0;
+			}
+			else if (command_array[COMMAND_SIZE - 1].command == E2_CLEAR) {
+				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == END_SIM)
