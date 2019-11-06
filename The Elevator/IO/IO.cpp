@@ -4,11 +4,14 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 #include <Passengers.h>
+#define CURSOR_Y 40
 
 //Function Headers
 void print_UP_array(UP_struct);
 void print_DOWN_array(DOWN_struct);
 void print_door(int);
+void print_elevator_base();
+void print_elevator_move(int, int, int);
 
 command passengerstruct;
 command pipeline1struct;
@@ -53,6 +56,7 @@ UINT __stdcall IOStatusElevator1(void *args)
 		print_DOWN_array(E1_status.DOWN_array);
 		cout.flush();
 		cursor.Signal();
+		print_elevator_move(1, E1_status.floor, E1_status.passenger_count);
 	}
 
 	return 0;
@@ -87,6 +91,7 @@ UINT __stdcall IOStatusElevator2(void *args)
 		print_DOWN_array(E2_status.DOWN_array);
 		cout.flush();
 		cursor.Signal();
+		print_elevator_move(2, E2_status.floor, E2_status.passenger_count);
 	}
 	return 0;
 }
@@ -119,11 +124,17 @@ int main()
 
 	r1.Wait();
 
-	Passengers p1, p2, p3, p4, p5;
+	cursor.Wait();
+	MOVE_CURSOR(0, CURSOR_Y);
+	print_elevator_base();
+	cursor.Signal();
 
+
+	Passengers p1, p2, p3, p4, p5;
+/*
 	p1.Resume();
 	Sleep(1000);
-	p2.Resume();
+	p2.Resume();*/
 	//Sleep(1000);
 
 	while (1)
@@ -333,4 +344,108 @@ void print_door(int door)
 		cout << "door status: OPEN" << endl;
 	else
 		cout << "door status: CLOSED" << endl;
+}
+
+void print_elevator_base() {
+	cout << "   ELEVATOR 1                      ELEVATOR 2" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "9|             |                9|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "8|             |                8|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "7|             |                7|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "6|             |                6|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "5|             |                5|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "4|             |                4|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "3|             |                3|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "2|             |                2|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "1|             |                1|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+	cout << "0|             |                0|             |" << endl;
+	cout << "  _____________                   _____________" << endl;
+}
+
+void print_elevator_move(int elevator, int floor, int num) {
+	// clear the floors above/below, print num on new floor
+	// num = E1_status.passenger_count or E2_status.passenger_count
+	int cursor_spot = 0;
+	if (elevator == 1)
+		cursor_spot = 8;
+	else
+		cursor_spot = 40;
+	cursor.Wait();
+	if (floor == 9) {
+		MOVE_CURSOR(cursor_spot, 4 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 2 + CURSOR_Y);
+	}
+	else if (floor == 8) {
+		MOVE_CURSOR(cursor_spot, 2 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 6 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 4 + CURSOR_Y);
+	}
+	else if (floor == 7) {
+		MOVE_CURSOR(cursor_spot, 4 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 8 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 6 + CURSOR_Y);
+	}
+	else if (floor == 6) {
+		MOVE_CURSOR(cursor_spot, 6 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 10 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 8 + CURSOR_Y);
+	}
+	else if (floor == 5) {
+		MOVE_CURSOR(cursor_spot, 8 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 12 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 10 + CURSOR_Y);
+	}
+	else if (floor == 4) {
+		MOVE_CURSOR(cursor_spot, 10 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 14 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 12 + CURSOR_Y);
+	}
+	else if (floor == 3) {
+		MOVE_CURSOR(cursor_spot, 12 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 16 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 14 + CURSOR_Y);
+	}
+	else if (floor == 2) {
+		MOVE_CURSOR(cursor_spot, 14 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 18 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 16 + CURSOR_Y);
+	}
+	else if (floor == 1) {
+		MOVE_CURSOR(cursor_spot, 16 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 20 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 18 + CURSOR_Y);
+	}
+	else if (floor == 0) {
+		MOVE_CURSOR(cursor_spot, 18 + CURSOR_Y);
+		cout << "  ";
+		MOVE_CURSOR(cursor_spot, 20 + CURSOR_Y);
+	}
+	cout << num;
+	cursor.Signal();
 }
