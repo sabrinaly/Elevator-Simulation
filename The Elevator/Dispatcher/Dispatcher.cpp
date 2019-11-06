@@ -288,6 +288,9 @@ int main()
 				}
 				// else leave in array
 			}
+
+			/*********  Elevator 2 Fault  **********/
+
 			else if (E2_status.fault && command_array[i].valid == 1)
 			{
 				// EV2 fault, E1 going up, command on the way to E1
@@ -297,9 +300,15 @@ int main()
 					{
 						command_array[i].valid = 0;
 						if (command_type == DIS_E1)
+						{
+							cout << "EV1 POST3" << endl;
 							Elevator1.Post(command_floor);
+						}
 						else
+						{
+							cout << "EV1 POST4" << i << command_array[i].command << endl;
 							Elevator1.Post(command_array[i].command - 10);
+						}
 					}
 				}
 				// EV2 fault, E1 going down, command on the way to E1
@@ -309,11 +318,33 @@ int main()
 					{
 						command_array[i].valid = 0;
 						if (command_type == DIS_E1)
+						{
+							cout << "EV1 POST5" << endl;
 							Elevator1.Post(command_floor);
+						}
 						else
+						{
+							cout << "EV1 POST6" << endl;
 							Elevator1.Post(command_array[i].command - 10);
+						}
 					}
 				}
+				// EV2 fault, E1 idle
+				else if (E1_status.floor == E1_status.target_floor)
+				{
+					command_array[i].valid = 0;
+					if (command_type == DIS_E1)
+					{
+						cout << "EV1 POST7" << endl;
+						Elevator1.Post(command_floor);
+					}
+					else
+					{
+						cout << "EV1 POST8" << endl;
+						Elevator1.Post(command_array[i].command - 10);
+					}
+				}
+				// else leave in array
 			}
 
 			/**================================================== *
