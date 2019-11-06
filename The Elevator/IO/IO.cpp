@@ -4,7 +4,7 @@
 #include <ElevatorData.h>
 #include <ElevatorStatus.h>
 #include <Passengers.h>
-#define CURSOR_Y 40
+#define CURSOR_Y 35
 
 //Function Headers
 void print_UP_array(UP_struct);
@@ -129,12 +129,7 @@ int main()
 	print_elevator_base();
 	cursor.Signal();
 
-	//Passengers p1, p2, p3, p4, p5;
-	/*
-	p1.Resume();
-	Sleep(1000);
-	p2.Resume();*/
-	//Sleep(1000);
+	Passengers p1, p2, p3, p4, p5;
 
 	while (1)
 	{
@@ -151,57 +146,15 @@ int main()
 			dispatcherPipe.Write(&pipeline1struct);
 			pipelineMutex.Signal();
 
-			// if (input1 == '-' && input2 == '1')
-			// {
-			// 	cursor.Wait();
-			// 	MOVE_CURSOR(0, 0);
-			// 	cout << "Received command: " << input1 << input2 << endl;
-			// 	cursor.Signal();
-			// 	/* while (1)
-			// 	{
-			// 		if (TEST_FOR_KEYBOARD())
-			// 		{
-			// 			input1 = _getch();
-			// 			input2 = _getch();
-			// 			if (input1 == '+' && input2 == '1')
-			// 			{
-			// 				cursor.Wait();
-			// 				MOVE_CURSOR(0, 0);
-			// 				cout << "Received command: " << input1 << input2 << endl;
-			// 				cursor.Signal();
-			// 				pipeline1struct = {input1, input2};
-			// 				pipelineMutex.Wait();
-			// 				dispatcherPipe.Write(&pipeline1struct);
-			// 				pipelineMutex.Signal();
-			// 				break;
-			// 			}
-			// 		}
-			// 	} */
-			// }
-
-			// if (input1 == '-' && input2 == '2')
-			// {
-			// 	cursor.Wait();
-			// 	MOVE_CURSOR(0, 0);
-			// 	cout << "Received command: " << input1 << input2 << endl;
-			// 	cursor.Signal();
-			// 	/* while (1)
-			// 	{
-			// 		if (TEST_FOR_KEYBOARD())
-			// 		{
-			// 			input1 = _getch();
-			// 			input2 = _getch();
-			// 			if (input1 == '+' && input2 == '2')
-			// 			{
-			// 				pipeline1struct = {input1, input2};
-			// 				pipelineMutex.Wait();
-			// 				dispatcherPipe.Write(&pipeline1struct);
-			// 				pipelineMutex.Signal();
-			// 				break;
-			// 			}
-			// 		}
-			// 	} */
-			// }
+			if (input1 == 'd' && input2 == '+') {
+				p1.Resume();
+				Sleep(1000);
+				p2.Resume();
+			}
+			else if (input1 == 'd' && input2 == '-') {
+				p1.~Passengers();
+				p2.~Passengers();
+			}
 
 			cursor.Wait();
 			MOVE_CURSOR(0, 0);

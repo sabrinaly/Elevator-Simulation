@@ -6,7 +6,6 @@
 	TODO:
 	- max 4 passengers - RAYMOND - IMPLEMENTED
 		- not working
-	- dispatcher algorithm - SABRINA - IMPLEMENTED
 	- print status and other debug prints - RAYMOND - WIP
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
@@ -19,7 +18,7 @@
 
 	- Each elevator should freeze its actions immediately upon receipt of a simulated fault condition, and should ignore subsequent commands except a command to end the simulation, or clear the fault.
 
-
+	- restarting passenger mode
 	Debugging:
 		- stop not being printed - RESOLVED - cannot put arrays in datapool
  */
@@ -47,6 +46,8 @@
 #define DIS_OUT_DOWN 3
 
 //Faults Defines
+#define START_PASSENGERS 93
+#define END_PASSENGERS 94
 #define END_SIM 95
 #define E1_FAULT 96
 #define E1_CLEAR 97

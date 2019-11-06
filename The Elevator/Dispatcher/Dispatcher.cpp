@@ -83,10 +83,12 @@ UINT __stdcall ReadPipeline(void *args)
 		}
 		else if (mystruct.x == 'd' && mystruct.y == '+')
 		{
+			command_array[COMMAND_SIZE - 2] = { START_PASSENGERS, 2, 0 };
 		}
 		// end active passengers
 		else if (mystruct.x == 'd' && mystruct.y == '-')
 		{
+			command_array[COMMAND_SIZE - 2] = { END_PASSENGERS, 2, 0 };
 		}
 		// elevator 1 fault occurred
 		else if (mystruct.x == '-' && mystruct.y == '1')
@@ -138,22 +140,22 @@ UINT __stdcall ReadPipeline(void *args)
 int main()
 {
 
-	CProcess Elevator1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
-					   NORMAL_PRIORITY_CLASS,																											  // priority
-					   OWN_WINDOW,																														  // process has its own window
-					   ACTIVE																															  // process is active immediately
+	CProcess Elevator1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,																											  // priority
+		OWN_WINDOW,																														  // process has its own window
+		ACTIVE																															  // process is active immediately
 	);
 
-	CProcess Elevator2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
-					   NORMAL_PRIORITY_CLASS,																											  // priority
-					   OWN_WINDOW,																														  // process has its own window
-					   ACTIVE																															  // process is active immediately
+	CProcess Elevator2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,																											  // priority
+		OWN_WINDOW,																														  // process has its own window
+		ACTIVE																															  // process is active immediately
 	);
 
-	CProcess IO("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
-				NORMAL_PRIORITY_CLASS,																									   // priority
-				OWN_WINDOW,																												   // process has its own window
-				ACTIVE);
+	CProcess IO("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+		NORMAL_PRIORITY_CLASS,																									   // priority
+		OWN_WINDOW,																												   // process has its own window
+		ACTIVE);
 
 	CThread Elevator1Status(DispatcherStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2Status(DispatcherStatusElevator2, ACTIVE, NULL);
@@ -229,8 +231,15 @@ int main()
 				cout << "RECEIVIED END SIM" << endl;
 				break;
 			}
-
 			/* =======  End of FAULTS  ======= */
+
+			// starting/ending active passengers
+			else if (command_array[COMMAND_SIZE - 2].command == START_PASSENGERS || command_array[COMMAND_SIZE - 2].command == END_PASSENGERS) {
+				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				empty_command_array();
+			}
+
 			else if (E1_status.fault && E2_status.fault)
 			{
 				// do nothing
