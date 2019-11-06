@@ -20,7 +20,7 @@ UINT __stdcall IOStatusElevator1(void *args)
 	//Direction (up/down), General Status (in/out of service), Door Status (open/closed), Current Floor Number
 	ElevatorStatus Elevator1Status("Elevator1");
 
-	Sleep(5000);
+	Sleep(2000);
 
 	cursor.Wait();
 	CURSOR_OFF();

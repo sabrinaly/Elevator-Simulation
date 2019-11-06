@@ -187,7 +187,6 @@ int main()
 		//if passenger is outside and requesting to go up
 		else if (command_type == OUT_UP)
 		{
-			cout << "TEST" << endl;
 			EV1UP_array[req_floor].stop = 1;
 			EV1UP_array[req_floor].passenger_outside++;
 		}

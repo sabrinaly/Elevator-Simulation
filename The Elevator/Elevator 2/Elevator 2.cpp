@@ -66,6 +66,7 @@ UINT __stdcall Elevator2Move(void *args)
 					//if floor array is empty and it is end of sim, open_door
 					if (end_sim && elevator_floor == 0)
 					{
+						cout << "Reached here" << endl;
 						open_door();
 						done = 1;
 					}
@@ -90,7 +91,7 @@ UINT __stdcall Elevator2Move(void *args)
 
 int main()
 {
-	CThread t2(Elevator2Move, ACTIVE, NULL);
+	CThread t1(Elevator2Move, ACTIVE, NULL);
 	r1.Wait();
 
 	int stopped_flag = 0;
@@ -186,7 +187,6 @@ int main()
 		//if passenger is outside and requesting to go up
 		else if (command_type == OUT_UP)
 		{
-			cout << "TEST" << endl;
 			EV2UP_array[req_floor].stop = 1;
 			EV2UP_array[req_floor].passenger_outside++;
 		}
@@ -206,11 +206,12 @@ int main()
 	/* =======  End of Listen for Commands  ======= */
 	while (done == 0)
 	{
+		//do nothing
 	}
 
 	cout << "End of Simulation" << endl;
-	t2.~CThread();
-	t2.WaitForThread();
+	t1.~CThread();
+	t1.WaitForThread();
 
 	cout << "Waiting for r2" << endl;
 	r2.Wait();
