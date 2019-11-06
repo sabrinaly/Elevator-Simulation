@@ -35,25 +35,26 @@ UINT __stdcall Elevator2Move(void *args)
 		/*********  ELEVATOR GOING UP  **********/
 		while (elevator_floor < target_floor)
 		{
+			elevator_direction = UP;
 			if (EV2UP_array[elevator_floor].stop)
 			{
 				stop_elevator(UP);
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor++;
-			elevator_direction = UP;
+			//elevator_direction = UP;
 			update_status();
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
 		while (elevator_floor > target_floor)
 		{
+			elevator_direction = DOWN;
 			if (EV2DOWN_array[elevator_floor].stop)
 			{
 				stop_elevator(DOWN);
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor--;
-			elevator_direction = DOWN;
 			update_status();
 		}
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
@@ -135,16 +136,36 @@ int main()
 			break;
 			// TODO: open doors
 		}
+		//if passenger is inside
+		else if (command_type == INSIDE)
+		{
+			cout << "INSIDE" << endl;
+			if (elevator_direction == UP)
+			{
+				cout << "INSIDE UP" << endl;
+				EV2UP_array[req_floor].stop = 1;
+				EV2UP_array[req_floor].passenger_inside++;
+			}
+			else if (elevator_direction == DOWN)
+			{
+				cout << "INSIDE DOWN" << endl;
+				EV2DOWN_array[req_floor].stop = 1;
+				EV2DOWN_array[req_floor].passenger_inside++;
+			}
+		}
 		else if (elevator_floor == target_floor)
 		{
+			cout << "Target Floor" << endl;
 			if (command_type == INSIDE && req_floor > elevator_floor)
 			{
+				cout << "Target Floor UP" << endl;
 				EV2UP_array[req_floor].stop = 1;
 				EV2UP_array[req_floor].passenger_inside++;
 				target_floor = req_floor;
 			}
 			else if (command_type == INSIDE && req_floor < elevator_floor)
 			{
+				cout << "Target Floor DOWN" << endl;
 				EV2DOWN_array[req_floor].stop = 1;
 				EV2DOWN_array[req_floor].passenger_inside++;
 				target_floor = req_floor;
@@ -168,20 +189,6 @@ int main()
 				EV2UP_array[req_floor].stop = 1;
 				EV2UP_array[req_floor].passenger_outside++;
 				target_floor = req_floor;
-			}
-		}
-		//if passenger is inside
-		else if (command_type == INSIDE)
-		{
-			if (elevator_direction == UP)
-			{
-				EV2UP_array[req_floor].stop = 1;
-				EV2UP_array[req_floor].passenger_inside++;
-			}
-			else if (elevator_direction == DOWN)
-			{
-				EV2DOWN_array[req_floor].stop = 1;
-				EV2DOWN_array[req_floor].passenger_inside++;
 			}
 		}
 		//if passenger is outside and requesting to go up
@@ -223,32 +230,34 @@ void stop_elevator(int elevator_direction)
 	if (elevator_direction == UP)
 	{
 		open_door();
-		//Update counters
-		EV_passenger_count = EV_passenger_count - EV2UP_array[target_floor].passenger_inside + EV2UP_array[target_floor].passenger_outside;
-		outside_issued_count -= EV2UP_array[target_floor].passenger_outside;
 		EV2_UP_SIGNAL();
 		Sleep(DOOR_DELAY);
 		EV2_UP_RESET();
 		close_door();
+		//Update counters
+		EV_passenger_count = EV_passenger_count - EV2UP_array[elevator_floor].passenger_inside + EV2UP_array[elevator_floor].passenger_outside;
+		outside_issued_count -= EV2UP_array[elevator_floor].passenger_outside;
 		//clear floor struct
 		EV2UP_array[elevator_floor].stop = 0;
 		EV2UP_array[elevator_floor].passenger_inside = 0;
 		EV2UP_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 	else if (elevator_direction == DOWN)
 	{
 		open_door();
-		//Update counters
-		EV_passenger_count = EV_passenger_count - EV2DOWN_array[target_floor].passenger_inside + EV2DOWN_array[target_floor].passenger_outside;
-		outside_issued_count -= EV2DOWN_array[target_floor].passenger_outside;
 		EV2_DW_SIGNAL();
 		Sleep(DOOR_DELAY);
 		EV2_DW_RESET();
 		close_door();
+		//Update counters
+		EV_passenger_count = EV_passenger_count - EV2DOWN_array[elevator_floor].passenger_inside + EV2DOWN_array[elevator_floor].passenger_outside;
+		outside_issued_count -= EV2DOWN_array[elevator_floor].passenger_outside;
 		//clear floor struct
 		EV2DOWN_array[elevator_floor].stop = 0;
 		EV2DOWN_array[elevator_floor].passenger_inside = 0;
 		EV2DOWN_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 }
 

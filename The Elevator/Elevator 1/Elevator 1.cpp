@@ -136,6 +136,23 @@ int main()
 			break;
 			// TODO: open doors
 		}
+		//if passenger is inside
+		else if (command_type == INSIDE)
+		{
+			cout << "INSIDE" << endl;
+			if (elevator_direction == UP)
+			{
+				cout << "INSIDE UP" << endl;
+				EV1UP_array[req_floor].stop = 1;
+				EV1UP_array[req_floor].passenger_inside++;
+			}
+			else if (elevator_direction == DOWN)
+			{
+				cout << "INSIDE DOWN" << endl;
+				EV1DOWN_array[req_floor].stop = 1;
+				EV1DOWN_array[req_floor].passenger_inside++;
+			}
+		}
 		else if (elevator_floor == target_floor)
 		{
 			cout << "Target Floor" << endl;
@@ -172,23 +189,6 @@ int main()
 				EV1UP_array[req_floor].stop = 1;
 				EV1UP_array[req_floor].passenger_outside++;
 				target_floor = req_floor;
-			}
-		}
-		//if passenger is inside
-		else if (command_type == INSIDE)
-		{
-			cout << "INSIDE" << endl;
-			if (elevator_direction == UP)
-			{
-				cout << "INSIDE UP" << endl;
-				EV1UP_array[req_floor].stop = 1;
-				EV1UP_array[req_floor].passenger_inside++;
-			}
-			else if (elevator_direction == DOWN)
-			{
-				cout << "INSIDE DOWN" << endl;
-				EV1DOWN_array[req_floor].stop = 1;
-				EV1DOWN_array[req_floor].passenger_inside++;
 			}
 		}
 		//if passenger is outside and requesting to go up
