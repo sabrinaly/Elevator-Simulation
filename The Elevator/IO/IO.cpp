@@ -43,7 +43,8 @@ UINT __stdcall IOStatusElevator1(void *args)
 			 << "direction: " << E1_status.direction << endl
 			 << "floor: " << E1_status.floor << endl
 			 << "target floor: " << E1_status.target_floor << endl
-			 << "passenger count: " << E1_status.passenger_count << endl;
+			 << "passenger count: " << E1_status.passenger_count << endl
+			 << "fault: " << E1_status.fault << endl;
 		print_door(E1_status.door);
 		cout << "... UP ARRAY ..." << endl;
 		print_UP_array(E1_status.UP_array);
@@ -76,7 +77,8 @@ UINT __stdcall IOStatusElevator2(void *args)
 			 << "direction: " << E2_status.direction << endl
 			 << "floor: " << E2_status.floor << endl
 			 << "target floor: " << E2_status.target_floor << endl
-			 << "passenger count: " << E2_status.passenger_count << endl;
+			 << "passenger count: " << E2_status.passenger_count << endl
+			 << "fault: " << E2_status.fault << endl;
 		print_door(E2_status.door);
 		cout << "... UP ARRAY ..." << endl;
 		print_UP_array(E2_status.UP_array);

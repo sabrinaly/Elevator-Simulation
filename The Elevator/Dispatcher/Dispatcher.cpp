@@ -60,7 +60,18 @@ UINT __stdcall ReadPipeline(void *args)
 
 		int command_floor = mystruct.y - '0';
 		// start active passengers
-		if (E1_status.fault && mystruct.x == '1')
+		if (E1_status.fault && E2_status.fault)
+		{
+			if (mystruct.x == '+' && mystruct.y == '1')
+				command_array[COMMAND_SIZE - 1] = {E1_CLEAR, 2, 0};
+			else if (mystruct.x == '+' && mystruct.y == '2')
+				command_array[COMMAND_SIZE - 1] = {E2_CLEAR, 2, 0};
+			else
+			{
+				//do nothing, don't save in array
+			}
+		}
+		else if (E1_status.fault && mystruct.x == '1')
 		{
 			// do nothing, don't save in array
 		}
@@ -215,7 +226,10 @@ int main()
 			}
 
 			/* =======  End of FAULTS  ======= */
-
+			else if (E1_status.fault && E2_status.fault)
+			{
+				// do nothing
+			}
 			else if (E1_status.fault)
 			{
 				// EV1 fault, E2 going up, command on the way to E2

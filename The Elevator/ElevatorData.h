@@ -10,6 +10,7 @@
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
 		- not working need to allow other elevator operate
+		- both elevator faults
 	- activate active objects/mode changes
 	- mailbox to end simulation - WIP
 		- make doors open when simulation ends
