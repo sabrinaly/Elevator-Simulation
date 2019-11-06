@@ -34,8 +34,8 @@ int destroy = 0;
 elevator_status E1_status;
 elevator_status E2_status;
 
-int passengers_waiting_up[10] = { 0 };
-int passengers_waiting_down[10] = { 0 };
+int passengers_waiting_up[10] = {0};
+int passengers_waiting_down[10] = {0};
 
 UINT __stdcall IOStatusElevator1(void *args)
 {
@@ -68,7 +68,8 @@ UINT __stdcall IOStatusElevator1(void *args)
 		cout.flush();
 		cursor.Signal();
 		print_elevator_move(1, E1_status.floor, E1_status.passenger_count);
-		print_passengers_waiting(1);
+		if (E1_status.changed_floor)
+			print_passengers_waiting(1);
 	}
 
 	return 0;
@@ -102,7 +103,8 @@ UINT __stdcall IOStatusElevator2(void *args)
 		cout.flush();
 		cursor.Signal();
 		print_elevator_move(2, E2_status.floor, E2_status.passenger_count);
-		print_passengers_waiting(2);
+		if (E2_status.changed_floor)
+			print_passengers_waiting(2);
 	}
 	return 0;
 }
@@ -214,16 +216,20 @@ int main()
 			{
 				create_pass_flag = 2;
 			}
-			else if (input1 == 'u') {
+			else if (input1 == 'u')
+			{
 				int input2_int = input2 - '0';
-				if (input2_int <= 9 && input2_int >= 0) {
+				if (input2_int <= 9 && input2_int >= 0)
+				{
 					passengers_waiting_up[input2_int]++;
 					print_increment();
 				}
 			}
-			else if (input1 == 'd') {
+			else if (input1 == 'd')
+			{
 				int input2_int = input2 - '0';
-				if (input2_int <= 9 && input2_int >= 0) {
+				if (input2_int <= 9 && input2_int >= 0)
+				{
 					passengers_waiting_down[input2_int]++;
 					print_increment();
 				}
@@ -402,7 +408,8 @@ void print_elevator_base()
 	cout << "  _____________                                     _____________" << endl;
 }
 
-void print_passengers_waiting(int elevator_num) {
+void print_passengers_waiting(int elevator_num)
+{
 	int cursor_x_up = 26;
 	int cursor_x_down = 37;
 	int cursor_y = 38; // for floor 9, -2 for each lower floor
@@ -443,9 +450,6 @@ void print_passengers_waiting(int elevator_num) {
 	//	passengers_waiting_down[E2_status.floor] -= passengers2_outside_down(E2_status.floor);
 	//	cout << passengers_waiting_down[E2_status.floor] << endl;
 	//}
-
-
-
 
 	//for (int i = 0; i < 10; i++) {
 	//	if (elevator_num == 1) {
@@ -496,7 +500,7 @@ void print_passengers_waiting(int elevator_num) {
 	//	else if (E2_status.floor == i) {
 	//		//passengers waiting up
 	//		MOVE_CURSOR(cursor_x_up, 56 - 2 * i);
-	//		cout << passengers_waiting_up[i] - passengers2_outside_up(i) << endl; 
+	//		cout << passengers_waiting_up[i] - passengers2_outside_up(i) << endl;
 	//		//passengers waiting down
 
 	//		MOVE_CURSOR(cursor_x_down, 56 - 2 * i);
@@ -511,12 +515,14 @@ void print_passengers_waiting(int elevator_num) {
 	//}
 }
 
-void print_increment() {
+void print_increment()
+{
 	int cursor_x_up = 26;
 	int cursor_x_down = 37;
 	int cursor_y = 38; // for floor 9, -2 for each lower floor
 	cursor.Wait();
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 10; i++)
+	{
 		//MOVE_CURSOR(cursor_x_up, i + 20 + i + (4 * (9 - i)));
 
 		MOVE_CURSOR(cursor_x_up, 56 - 2 * i);
@@ -525,7 +531,6 @@ void print_increment() {
 		cout << passengers_waiting_down[i] << endl;
 	}
 	cursor.Signal();
-
 }
 
 int passengers1_outside_up(int i)

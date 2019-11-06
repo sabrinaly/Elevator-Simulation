@@ -25,6 +25,7 @@ int target_floor = 0;
 int end_sim = 0;
 int fault = 0;
 int destroy = 0;
+int changed_floor = 0;
 
 UINT __stdcall Elevator2Move(void *args)
 {
@@ -33,7 +34,7 @@ UINT __stdcall Elevator2Move(void *args)
 	{
 
 		/*********  ELEVATOR GOING UP  **********/
-		while (elevator_floor < target_floor)
+		while (elevator_floor < target_floor && !destroy)
 		{
 			elevator_direction = UP;
 			if (EV2UP_array[elevator_floor].stop)
@@ -42,11 +43,12 @@ UINT __stdcall Elevator2Move(void *args)
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor++;
-			//elevator_direction = UP;
+			changed_floor = 1;
 			update_status();
+			changed_floor = 0;
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
-		while (elevator_floor > target_floor)
+		while (elevator_floor > target_floor && !destroy)
 		{
 			elevator_direction = DOWN;
 			if (EV2DOWN_array[elevator_floor].stop)
@@ -55,7 +57,9 @@ UINT __stdcall Elevator2Move(void *args)
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor--;
+			changed_floor = 1;
 			update_status();
+			changed_floor = 0;
 		}
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
 		if (elevator_floor == target_floor)
@@ -74,12 +78,7 @@ UINT __stdcall Elevator2Move(void *args)
 			{
 				while (check_empty_array() == 0)
 				{
-					/* //if floor array is empty and it is end of sim, open_door
-					if (end_sim && elevator_floor == 0)
-					{
-						cout << "Reached here" << endl;
-						open_door();
-					} */
+					// do nothing
 				}
 			}
 			else if (elevator_direction == UP)
@@ -101,7 +100,7 @@ UINT __stdcall Elevator2Move(void *args)
 
 int main()
 {
-	CThread t2(Elevator2Move, ACTIVE, NULL);
+	CThread t1(Elevator2Move, ACTIVE, NULL);
 	r1.Wait();
 
 	int stopped_flag = 0;
@@ -235,11 +234,11 @@ int main()
 	}
 	/* =======  End of Listen for Commands  ======= */
 	EV2SimFinished.Wait();
-	destroy = 1;
 
 	cout << "End of Simulation" << endl;
-	//t2.~CThread();
-	//t2.WaitForThread();
+	destroy = 1;
+	//t1.~CThread();
+	//t1.WaitForThread();
 
 	cout << "Waiting for r2" << endl;
 	r2.Wait();
@@ -325,7 +324,7 @@ void update_status()
 	DOWN_array.s8 = EV2DOWN_array[8];
 	DOWN_array.s9 = EV2DOWN_array[9];
 
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, UP_array, DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, changed_floor, UP_array, DOWN_array};
 	Elevator2Status.Update_Status(status);
 }
 
