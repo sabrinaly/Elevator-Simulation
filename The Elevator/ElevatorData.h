@@ -5,17 +5,16 @@
 
 	TODO:
 	- max 4 passengers - RAYMOND - IMPLEMENTED
+		- not working
 	- dispatcher algorithm - SABRINA - IMPLEMENTED
 	- print status and other debug prints - RAYMOND - WIP
 		- only printing elevator status and command rn
 	- elevator faults - SABRINA - IMPLEMENTED
-		- not working need to allow other elevator operate
-		- both elevator faults
+		- missing 'ee'
 	- activate active objects/mode changes
 	- mailbox to end simulation - WIP
 		- make doors open when simulation ends
 		- post back to IO to indicate end of simulation
-	- put door status in monitor? - RAYMOND - DONE
 	- move mode into status so IO can print the mode
 
 	- Each elevator should freeze its actions immediately upon receipt of a simulated fault condition, and should ignore subsequent commands except a command to end the simulation, or clear the fault.
@@ -130,7 +129,7 @@ floor_struct EV2DOWN_array[10];
 int EV_passenger_count;
 int outside_issued_count;
 
-int mode = MANUAL_MODE;
+//int mode = ACTIVE_MODE;
 
 int door1 = 0; // 1 = open, 0 = close
 int door2 = 0;

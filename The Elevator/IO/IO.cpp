@@ -119,11 +119,11 @@ int main()
 
 	r1.Wait();
 
-	Passengers p1, p2, p3, p4, p5;
+	/* Passengers p1, p2, p3, p4, p5;
 
 	p1.Resume();
 	Sleep(1000);
-	p2.Resume();
+	p2.Resume(); */
 	//Sleep(1000);
 
 	while (1)
