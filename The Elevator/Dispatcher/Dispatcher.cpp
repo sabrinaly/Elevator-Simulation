@@ -201,6 +201,7 @@ int main()
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E2_FAULT && E2_status.fault == 0)
 			{
+				cout << "EV2 POST0" << endl;
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				cout << "Posting Fault to EV2" << endl;
 				//clear array
@@ -213,12 +214,14 @@ int main()
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E2_CLEAR)
 			{
+				cout << "EV2 POST1" << endl;
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == END_SIM)
 			{
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				cout << "EV2 POST2" << endl;
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				end_sim = 1;
 				cout << "RECEIVIED END SIM" << endl;
@@ -230,7 +233,7 @@ int main()
 			{
 				// do nothing
 			}
-			else if (E1_status.fault)
+			else if (E1_status.fault && command_array[i].valid == 1)
 			{
 				// EV1 fault, E2 going up, command on the way to E2
 				if (E2_status.direction && E2_status.floor <= command_floor && E2_status.target_floor >= command_floor)
@@ -239,9 +242,15 @@ int main()
 					{
 						command_array[i].valid = 0;
 						if (command_type == DIS_E2)
+						{
+							cout << "EV2 POST3" << endl;
 							Elevator2.Post(command_floor);
+						}
 						else
+						{
+							cout << "EV2 POST4" << i << command_array[i].command << endl;
 							Elevator2.Post(command_array[i].command - 10);
+						}
 					}
 				}
 				// EV1 fault, E2 going down, command on the way to E2
@@ -251,9 +260,15 @@ int main()
 					{
 						command_array[i].valid = 0;
 						if (command_type == DIS_E2)
+						{
+							cout << "EV2 POST5" << endl;
 							Elevator2.Post(command_floor);
+						}
 						else
+						{
+							cout << "EV2 POST6" << endl;
 							Elevator2.Post(command_array[i].command - 10);
+						}
 					}
 				}
 				// EV1 fault, E2 idle
@@ -261,13 +276,19 @@ int main()
 				{
 					command_array[i].valid = 0;
 					if (command_type == DIS_E2)
+					{
+						cout << "EV2 POST7" << endl;
 						Elevator2.Post(command_floor);
+					}
 					else
+					{
+						cout << "EV2 POST8" << endl;
 						Elevator2.Post(command_array[i].command - 10);
+					}
 				}
 				// else leave in array
 			}
-			else if (E2_status.fault)
+			else if (E2_status.fault && command_array[i].valid == 1)
 			{
 				// EV2 fault, E1 going up, command on the way to E1
 				if (E1_status.direction && E1_status.floor <= command_floor && E1_status.target_floor >= command_floor)
@@ -301,7 +322,7 @@ int main()
 
 			// go to passenger waiting first
 			// both elevators idle
-			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor)
+			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor && command_array[i].valid == 1)
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
@@ -314,7 +335,7 @@ int main()
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
-						if (command_array[largest_age_index].valid)
+						if (command_array[largest_age_index].valid == 1)
 						{
 							largest_age_command_type = command_array[largest_age_index].command / 10;
 							largest_age_command_floor = command_array[largest_age_index].command % 10;
@@ -323,21 +344,27 @@ int main()
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 							}
 							else if (largest_age_command_type == DIS_E2)
+							{
+								cout << "EV2 POST9" << endl;
 								Elevator2.Post(command_array[largest_age_index].command % 10);
+							}
 							// E1 is closer, u or d
 							else if (abs(largest_age_command_floor - E1_status.floor) <= abs(largest_age_command_floor - E2_status.floor))
 							{
 								Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 							else
+							{
+								cout << "EV2 POST10" << endl;
 								Elevator2.Post(command_array[largest_age_index].command - 10);
+							}
 						}
 						command_array[largest_age_index].valid = 0;
 					}
 				}
 			}
 			// only E1 idle
-			else if (E1_status.target_floor == E1_status.floor)
+			else if (E1_status.target_floor == E1_status.floor && command_array[i].valid == 1)
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
@@ -348,7 +375,7 @@ int main()
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
-						if (command_array[largest_age_index].valid)
+						if (command_array[largest_age_index].valid == 1)
 						{
 							largest_age_command_type = command_array[largest_age_index].command / 10;
 							if (debug)
@@ -367,7 +394,7 @@ int main()
 				}
 			}
 			// only E2 idle
-			else if (E2_status.target_floor == E2_status.floor)
+			else if (E2_status.target_floor == E2_status.floor && command_array[i].valid == 1)
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
@@ -378,15 +405,21 @@ int main()
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
-						if (command_array[largest_age_index].valid)
+						if (command_array[largest_age_index].valid == 1)
 						{
 							largest_age_command_type = command_array[largest_age_index].command / 10;
 							if (debug)
 								cout << "Posting to EV2" << endl;
 							if (largest_age_command_type == DIS_E2)
+							{
+								cout << "EV2 POST11" << endl;
 								Elevator2.Post(command_array[largest_age_index].command % 10);
+							}
 							else
+							{
+								cout << "EV2 POST12" << endl;
 								Elevator2.Post(command_array[largest_age_index].command - 10);
+							}
 						}
 						command_array[largest_age_index].valid = 0;
 					}
@@ -398,7 +431,7 @@ int main()
 			 * ==========  Outside Elevator, Up Input  ========== *
 			 * ================================================== */
 
-			else if (command_type == DIS_OUT_UP && command_array[i].valid)
+			else if (command_type == DIS_OUT_UP && command_array[i].valid == 1)
 			{
 				Message = 10 + command_floor; // 10-19 for up
 				// if passenger waiting outside is on the way, send command to elevator
@@ -424,6 +457,7 @@ int main()
 							if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
 							{
 								command_array[i].valid = 0;
+								cout << "EV2 POST13" << endl;
 								Elevator2.Post(Message);
 							}
 						}
@@ -444,6 +478,7 @@ int main()
 					if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
 					{
 						command_array[i].valid = 0;
+						cout << "EV2 POST14" << endl;
 						Elevator2.Post(Message);
 					}
 				}
@@ -456,7 +491,7 @@ int main()
 			 * ==========  Outside Elevator, Down Input  ========== *
 			 * ================================================== */
 
-			else if (command_type == DIS_OUT_DOWN && command_array[i].valid)
+			else if (command_type == DIS_OUT_DOWN && command_array[i].valid == 1)
 			{
 				Message = 20 + command_floor; // 20-29 for down
 				if (E1_status.direction == DOWN && E1_status.floor >= command_floor && E1_status.target_floor <= command_floor)
@@ -479,6 +514,7 @@ int main()
 							if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
 							{
 								command_array[i].valid = 0;
+								cout << "EV2 POST15" << endl;
 								Elevator2.Post(Message);
 							}
 						}
@@ -499,6 +535,7 @@ int main()
 					if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E2))
 					{
 						command_array[i].valid = 0;
+						cout << "EV2 POST16" << endl;
 						Elevator2.Post(Message);
 					}
 				}
@@ -511,7 +548,7 @@ int main()
 			 * ==========  Inside Elevator  ========== *
 			 * ================================================== */
 
-			else if ((command_type == DIS_E1 && command_array[i].valid) || (command_type == DIS_E2 && command_array[i].valid))
+			else if ((command_type == DIS_E1 && command_array[i].valid == 1) || (command_type == DIS_E2 && command_array[i].valid == 1))
 			{
 				if (command_type == DIS_E1)
 				{
@@ -521,6 +558,7 @@ int main()
 				else
 				{
 					command_array[i].valid = 0;
+					cout << "EV2 POST17" << endl;
 					Elevator2.Post(command_floor);
 				}
 			}
@@ -569,7 +607,7 @@ void save_command(int command)
 	// increase the age of all valid command_array
 	for (int i = 0; i < COMMAND_SIZE; i++)
 	{
-		if (command_array[i].valid)
+		if (command_array[i].valid == 1)
 			command_array[i].age++;
 	}
 	c = {command, 1, 1};
@@ -594,7 +632,7 @@ int find_closest_index(int floor, int type)
 	{
 		int command_type = command_array[i].command / 10;
 		int command_floor = command_array[i].command % 10;
-		if (command_array[i].valid && command_type != type)
+		if (command_array[i].valid == 1 && command_type != type)
 		{
 			if (abs(floor - command_floor) < closest)
 			{
