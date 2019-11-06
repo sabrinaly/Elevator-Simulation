@@ -187,12 +187,6 @@ int main()
 				cout << "Posting Fault to EV1" << endl;
 				//clear array
 				empty_command_array();
-				//command_array = new command_struct[COMMAND_SIZE];
-				//while (command_array[COMMAND_SIZE - 1].command != E1_CLEAR)
-				//{
-				//}
-				//Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
-				//command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E2_FAULT && E2_status.fault == 0)
 			{
@@ -200,12 +194,6 @@ int main()
 				cout << "Posting Fault to EV2" << endl;
 				//clear array
 				empty_command_array();
-				//command_array = new command_struct[COMMAND_SIZE];
-				//while (command_array[COMMAND_SIZE - 1].command != E2_CLEAR)
-				//{
-				//}
-				//Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
-				//command_array[COMMAND_SIZE - 1].command = 0;
 			}
 			else if (command_array[COMMAND_SIZE - 1].command == E1_CLEAR)
 			{
@@ -318,7 +306,6 @@ int main()
 							largest_age_command_floor = command_array[largest_age_index].command % 10;
 							if (largest_age_command_type == DIS_E1)
 							{
-								cout << "EV1 POST3" << endl;
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 							}
 							else if (largest_age_command_type == DIS_E2)
@@ -326,7 +313,6 @@ int main()
 							// E1 is closer, u or d
 							else if (abs(largest_age_command_floor - E1_status.floor) <= abs(largest_age_command_floor - E2_status.floor))
 							{
-								cout << "EV1 POST4" << endl;
 								Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 							else
@@ -355,12 +341,10 @@ int main()
 								cout << "Posting to EV1" << endl;
 							if (largest_age_command_type == DIS_E1)
 							{
-								cout << "EV1 POST5" << endl;
 								Elevator1.Post(command_array[largest_age_index].command % 10);
 							}
 							else
 							{
-								cout << "EV1 POST6" << endl;
 								Elevator1.Post(command_array[largest_age_index].command - 10);
 							}
 						}
@@ -417,7 +401,6 @@ int main()
 							if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 							{
 								command_array[i].valid = 0;
-								cout << "EV1 POST7" << endl;
 								Elevator1.Post(Message);
 							}
 						}
@@ -437,7 +420,6 @@ int main()
 						if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 						{
 							command_array[i].valid = 0;
-							cout << "EV1 POST8" << endl;
 							Elevator1.Post(Message);
 						}
 					}
@@ -474,7 +456,6 @@ int main()
 							if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 							{
 								command_array[i].valid = 0;
-								cout << "EV1 POST9" << endl;
 								Elevator1.Post(Message);
 							}
 						}
@@ -494,7 +475,6 @@ int main()
 						if (mode == MANUAL_MODE || check_max_passenger(command_floor, DIS_E1))
 						{
 							command_array[i].valid = 0;
-							cout << "EV1 POST10" << endl;
 							Elevator1.Post(Message);
 						}
 					}
@@ -522,7 +502,6 @@ int main()
 				if (command_type == DIS_E1)
 				{
 					command_array[i].valid = 0;
-					cout << "EV1 POST11" << endl;
 					Elevator1.Post(command_floor);
 				}
 				else
