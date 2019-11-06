@@ -19,8 +19,16 @@ int passengers2_outside_up(int);
 int passengers2_outside_down(int);
 void print_increment();
 
+struct passenger_struct
+{
+	Passengers *passenger;
+	int valid = 0;
+};
+
 command passengerstruct;
 command pipeline1struct;
+
+int create_pass_flag = 0;
 
 elevator_status E1_status;
 elevator_status E2_status;
@@ -75,6 +83,11 @@ UINT __stdcall IOStatusElevator1(void *args)
 UINT __stdcall IOStatusElevator2(void *args)
 {
 	ElevatorStatus Elevator2Status("Elevator2");
+
+	cursor.Wait();
+	CURSOR_OFF();
+	cursor.Signal();
+
 	r1.Wait();
 	if (debug)
 	{
@@ -126,12 +139,59 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 	return 0;
 }
 
+UINT __stdcall CreatePassenger(void *args)
+{
+	//Passengers *passenger_array[NUM_PASSENGERS];
+	passenger_struct passenger_array[NUM_PASSENGERS];
+	r1.Wait();
+	CTypedPipe<command> passengerPipe("PassengerPipeline", 1024);
+	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
+
+	while (1)
+	{
+		while (create_pass_flag == 1)
+		{
+			//find space in array
+			for (int i = 0; i < NUM_PASSENGERS; i++)
+			{
+				if (passenger_array[i].valid == 0)
+				{
+					passenger_array[i].passenger = new Passengers;
+					passenger_array[i].passenger->Resume();
+					passenger_array[i].valid = 1;
+					break;
+				}
+			}
+			random_device rd;
+			mt19937 eng(rd());
+			uniform_int_distribution<> distr(1000, 1500);
+			Sleep(distr(eng));
+		}
+
+		if (create_pass_flag == 2)
+		{
+			for (int i = 0; i < NUM_PASSENGERS; i++)
+			{
+				if (passenger_array[i].valid == 1)
+				{
+					delete passenger_array[i].passenger;
+					passenger_array[i].valid = 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 int main()
 {
 	CThread Elevator1(IOStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2(IOStatusElevator2, ACTIVE, NULL);
 	CThread Passenger(ReadPassengerPipeline, ACTIVE, NULL);
+	CThread InitializePassenger(CreatePassenger, ACTIVE, NULL);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
+
+	int i = 0;
 
 	r1.Wait();
 
@@ -159,14 +219,13 @@ int main()
 			dispatcherPipe.Write(&pipeline1struct);
 			pipelineMutex.Signal();
 
-			if (input1 == 'd' && input2 == '+') {
-				p1.Resume();
-				Sleep(1000);
-				p2.Resume();
+			if (input1 == 'd' && input2 == '+')
+			{
+				create_pass_flag = 1;
 			}
-			else if (input1 == 'd' && input2 == '-') {
-				p1.~Passengers();
-				p2.~Passengers();
+			else if (input1 == 'd' && input2 == '-')
+			{
+				create_pass_flag = 2;
 			}
 			else if (input1 == 'u') {
 				int input2_int = input2 - '0';
@@ -197,7 +256,7 @@ int main()
 			{
 				cursor.Wait();
 				MOVE_CURSOR(0, 0);
-				cout << "END OF SIMULATION" << endl;
+				cout << "RECEIVED END MESSAGE ... " << endl;
 				cursor.Signal();
 				break;
 			}
@@ -207,17 +266,18 @@ int main()
 	Elevator1.~CThread();
 	Elevator2.~CThread();
 	Passenger.~CThread();
+	InitializePassenger.~CThread();
 
 	Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
 	Passenger.WaitForThread();
+	InitializePassenger.WaitForThread();
 
 	cursor.Wait();
 	CLEAR_SCREEN();
 	MOVE_CURSOR(0, 0);
-	cout << "threads ended" << endl;
-	cout << "END OF SIMULATION2" << endl;
-	cout << "Press enter to close simulation ..." << endl;
+	cout << "END OF SIMULATION!! "
+		 << "Press enter to close simulation ..." << endl;
 	cursor.Signal();
 
 	getchar();
