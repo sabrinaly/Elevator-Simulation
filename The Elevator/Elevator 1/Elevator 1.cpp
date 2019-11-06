@@ -114,10 +114,11 @@ int main()
 		if (Message == E1_FAULT)
 		{
 			clear_floor_array();
+			cout << "setting target_floor" << elevator_floor << endl;
 			target_floor = elevator_floor; // doing nothing in other thread
 										   // next message has to be clearing fault, dealt with in IO
 		}
-		if (Message == END_SIM)
+		else if (Message == END_SIM)
 		{
 			clear_floor_array();
 			target_floor = 0;
@@ -125,7 +126,7 @@ int main()
 			break;
 			// TODO: open doors
 		}
-		if (elevator_floor == target_floor)
+		else if (elevator_floor == target_floor)
 		{
 			if (command_type == INSIDE && req_floor > elevator_floor)
 			{

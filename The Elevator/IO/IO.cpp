@@ -147,6 +147,10 @@ int main()
 						input2 = _getch();
 						if (input1 == '+' && input2 == '1')
 						{
+							cursor.Wait();
+							MOVE_CURSOR(0, 0);
+							cout << "Received command: " << input1 << input2 << endl;
+							cursor.Signal();
 							pipeline1struct = {input1, input2};
 							pipelineMutex.Wait();
 							dispatcherPipe.Write(&pipeline1struct);
