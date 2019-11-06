@@ -109,20 +109,21 @@ int main()
 		/**================================================== *
 		 * ==========  Section Populate Elevator Array  ========== *
 		 * ================================================== */
-
+		cout << Message << endl;
 		if (Message == E1_FAULT)
 		{
 			clear_floor_array();
+			cout << "setting target_floor" << elevator_floor << endl;
 			target_floor = elevator_floor; // doing nothing in other thread
 										   // next message has to be clearing fault, dealt with in IO
 		}
-		if (Message == END_SIM)
+		else if (Message == END_SIM)
 		{
 			clear_floor_array();
 			target_floor = 0;
 			// TODO: open doors
 		}
-		if (elevator_floor == target_floor)
+		else if (elevator_floor == target_floor)
 		{
 			if (command_type == INSIDE && req_floor > elevator_floor)
 			{
@@ -211,9 +212,9 @@ void stop_elevator(int elevator_direction)
 		EV1_UP_RESET();
 		close_door();
 		//clear floor struct
-		EV1UP_array[target_floor].stop = 0;
-		EV1UP_array[target_floor].passenger_inside = 0;
-		EV1UP_array[target_floor].passenger_outside = 0;
+		EV1UP_array[elevator_floor].stop = 0;
+		EV1UP_array[elevator_floor].passenger_inside = 0;
+		EV1UP_array[elevator_floor].passenger_outside = 0;
 	}
 	else if (elevator_direction == DOWN)
 	{
@@ -223,9 +224,9 @@ void stop_elevator(int elevator_direction)
 		EV1_DW_RESET();
 		close_door();
 		//clear floor struct
-		EV1DOWN_array[target_floor].stop = 0;
-		EV1DOWN_array[target_floor].passenger_inside = 0;
-		EV1DOWN_array[target_floor].passenger_outside = 0;
+		EV1DOWN_array[elevator_floor].stop = 0;
+		EV1DOWN_array[elevator_floor].passenger_inside = 0;
+		EV1DOWN_array[elevator_floor].passenger_outside = 0;
 	}
 }
 

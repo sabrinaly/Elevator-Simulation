@@ -68,8 +68,9 @@ UINT __stdcall ReadPipeline(void *args)
 		{
 		}
 		// elevator 1 fault occurred
-		else if (mystruct.x == '-' && mystruct.y == '1')
-			command_array[COMMAND_SIZE - 1] = {E1_FAULT, 2, 0};
+		else if (mystruct.x == '-' && mystruct.y == '1') {
+			command_array[COMMAND_SIZE - 1] = { E1_FAULT, 2, 0 };
+		}
 		// elevator 1 fault cleared
 		else if (mystruct.x == '+' && mystruct.y == '1')
 			command_array[COMMAND_SIZE - 1] = {E1_CLEAR, 2, 0};
@@ -164,7 +165,7 @@ int main()
 			// faults are stored in index 99
 			if (command_array[COMMAND_SIZE - 1].command == E1_FAULT)
 			{
-				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				Elevator1.Post(E1_FAULT);
 				//clear array
 				delete[] command_array;
 				command_struct *command_array = new command_struct[COMMAND_SIZE];
@@ -198,12 +199,14 @@ int main()
 			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
+			// both elevators idle
 			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor) {
 				int largest_age_index = 0;
 				int largest_age = 0;
 				int largest_age_command_type = 0;
 				int largest_age_command_floor = 0;
-				while (largest_age == 0)
+				// no commands in array and no faults
+				while (largest_age == 0 && command_array[COMMAND_SIZE - 1].command == 0)
 				{
 					largest_age_index = find_largest_age_index(4); // command / 10 != 4 -> any commands
 					largest_age = command_array[largest_age_index].age;
@@ -227,12 +230,13 @@ int main()
 					}
 				}
 			}
+			// only E1 idle
 			else if (E1_status.target_floor == E1_status.floor)
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
 				int largest_age_command_type = 0;
-				while (largest_age == 0)
+				while (largest_age == 0 && command_array[COMMAND_SIZE - 1].command == 0)
 				{
 					largest_age_index = find_largest_age_index(1); // command / 10 != 1 -> any commands except E2
 					largest_age = command_array[largest_age_index].age;
@@ -251,12 +255,13 @@ int main()
 					}
 				}
 			}
+			// only E2 idle
 			else if (E2_status.target_floor == E2_status.floor)
 			{
 				int largest_age_index = 0;
 				int largest_age = 0;
 				int largest_age_command_type = 0;
-				while (largest_age == 0)
+				while (largest_age == 0 && command_array[COMMAND_SIZE - 1].command == 0)
 				{
 					largest_age_index = find_largest_age_index(0); // command / 10 != 0 -> any commands except E1
 					largest_age = command_array[largest_age_index].age;
