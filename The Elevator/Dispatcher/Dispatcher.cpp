@@ -29,7 +29,6 @@ UINT __stdcall DispatcherStatusElevator1(void *args)
 		E1_status = Elevator1Status.Dispatcher_Get_Elevator_Status();
 	}
 
-	r2.Wait();
 	return 0;
 }
 
@@ -42,7 +41,6 @@ UINT __stdcall DispatcherStatusElevator2(void *args)
 		E2_status = Elevator2Status.Dispatcher_Get_Elevator_Status();
 	}
 
-	r2.Wait();
 	return 0;
 }
 
@@ -73,8 +71,9 @@ UINT __stdcall ReadPipeline(void *args)
 			command_array[COMMAND_SIZE - 1] = {E1_FAULT, 2, 0};
 		}
 		// elevator 1 fault cleared
-		else if (mystruct.x == '+' && mystruct.y == '1') {
-			command_array[COMMAND_SIZE - 1] = { E1_CLEAR, 2, 0 };
+		else if (mystruct.x == '+' && mystruct.y == '1')
+		{
+			command_array[COMMAND_SIZE - 1] = {E1_CLEAR, 2, 0};
 		}
 		// elevator 2 fault occurred
 		else if (mystruct.x == '-' && mystruct.y == '2')
@@ -109,7 +108,6 @@ UINT __stdcall ReadPipeline(void *args)
 		}
 	}
 
-	r2.Wait();
 	return 0;
 }
 /* =======  End of READ PIPELINE  ======= */
@@ -194,11 +192,13 @@ int main()
 				//Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				//command_array[COMMAND_SIZE - 1].command = 0;
 			}
-			else if (command_array[COMMAND_SIZE - 1].command == E1_CLEAR) {
+			else if (command_array[COMMAND_SIZE - 1].command == E1_CLEAR)
+			{
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
-			else if (command_array[COMMAND_SIZE - 1].command == E2_CLEAR) {
+			else if (command_array[COMMAND_SIZE - 1].command == E2_CLEAR)
+			{
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				command_array[COMMAND_SIZE - 1].command = 0;
 			}
@@ -207,6 +207,7 @@ int main()
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
 				end_sim = 1;
+				cout << "RECEIVIED END SIM" << endl;
 				break;
 			}
 
@@ -440,20 +441,28 @@ int main()
 		}
 		/* =======  End of Command Search  ======= */
 		if (end_sim)
+		{
+			while (E1_status.floor != 0 && E1_status.door != 0 && E2_status.floor != 0 && E2_status.door != 0)
+			{
+			}
+			cout << "End of Simulation" << endl;
 			break;
+		}
 	}
 
 	/* =======  End of Dispatcher  ======= */
+	cout << "End of Dispatcher" << endl;
 
 	Elevator1Status.~CThread();
 	Elevator2Status.~CThread();
 	ReadPipeline.~CThread();
-
-	r2.Wait();
+	IO.Post(END_SIM);
 
 	Elevator1Status.WaitForThread();
 	Elevator2Status.WaitForThread();
 	ReadPipeline.WaitForThread();
+	cout << "Waiting for r2" << endl;
+	r2.Wait();
 	Elevator1.WaitForProcess();
 	Elevator2.WaitForProcess();
 	IO.WaitForProcess();

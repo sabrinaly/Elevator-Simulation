@@ -22,6 +22,7 @@ UINT Message;
 int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
+int fault = 0;
 
 UINT __stdcall Elevator2Move(void *args)
 {
@@ -273,7 +274,7 @@ void update_status()
 	DOWN_array.s8 = EV2DOWN_array[8];
 	DOWN_array.s9 = EV2DOWN_array[9];
 
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door2, UP_array, DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door2, fault, UP_array, DOWN_array};
 	Elevator2Status.Update_Status(status);
 }
 
