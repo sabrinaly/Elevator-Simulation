@@ -113,20 +113,20 @@ UINT __stdcall ReadPipeline(void *args)
 
 int main()
 {
-	
-	CProcess Elevator1("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 1.exe", // pathlist to child program executable
+
+	CProcess Elevator1("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 1.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess Elevator2("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\Elevator 2.exe", // pathlist to child program executable
+	CProcess Elevator2("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\Elevator 2.exe", // pathlist to child program executable
 					   NORMAL_PRIORITY_CLASS,																											  // priority
 					   OWN_WINDOW,																														  // process has its own window
 					   ACTIVE																															  // process is active immediately
 	);
 
-	CProcess IO("C:\\Users\\Sabrina Ly\\Documents\\Year4\\CPEN 333\\CPEN333-The-Elevator\\The Elevator\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
+	CProcess IO("C:\\Users\\sfron\\OneDrive\\School\\UBC 4th Year\\CPEN333\\Labs\\CPEN333-The-Elevator\\The Elevator\\x64\\Debug\\IO.exe", // pathlist to child program executable	plus some arguments
 				NORMAL_PRIORITY_CLASS,																									   // priority
 				OWN_WINDOW,																												   // process has its own window
 				ACTIVE);
@@ -139,12 +139,17 @@ int main()
 	int Message = NULL;
 	int command_floor = NULL;
 	int command_type = NULL;
+	int end_sim = 0;
+
+	/**================================================== *
+	 * ==========   Dispatcher  ========== *
+	 * ================================================== */
 
 	while (1)
 	{
 
 		/**================================================== *
-		 * ==========   Dispatcher  ========== *
+		 * ==========   Command Search  ========== *
 		 * ================================================== */
 
 		// 0-9 = E1 inside, 10-19 = E2 inside, 20-29 = outside up, 30-39 = outside down
@@ -165,6 +170,7 @@ int main()
 			if (command_array[COMMAND_SIZE - 1].command == E1_FAULT)
 			{
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
+				cout << "Posting " << command_array[COMMAND_SIZE - 1].command << endl;
 				//clear array
 				delete[] command_array;
 				command_struct *command_array = new command_struct[COMMAND_SIZE];
@@ -190,6 +196,8 @@ int main()
 			{
 				Elevator1.Post(command_array[COMMAND_SIZE - 1].command);
 				Elevator2.Post(command_array[COMMAND_SIZE - 1].command);
+				end_sim = 1;
+				break;
 			}
 
 			/* =======  End of FAULTS  ======= */
@@ -198,7 +206,8 @@ int main()
 			 * =======  Section EV Reached Target Floor  ======== *
 			 * ================================================== */
 
-			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor) {
+			else if (E1_status.target_floor == E1_status.floor && E2_status.target_floor == E2_status.floor)
+			{
 				int largest_age_index = 0;
 				int largest_age = 0;
 				int largest_age_command_type = 0;
@@ -210,7 +219,7 @@ int main()
 					if (largest_age != 0)
 					{
 						if (command_array[largest_age_index].valid)
-						{	
+						{
 							largest_age_command_type = command_array[largest_age_index].command / 10;
 							largest_age_command_floor = command_array[largest_age_index].command % 10;
 							if (largest_age_command_type == DIS_E1)
@@ -238,7 +247,8 @@ int main()
 					largest_age = command_array[largest_age_index].age;
 					if (largest_age != 0)
 					{
-						if (command_array[largest_age_index].valid){
+						if (command_array[largest_age_index].valid)
+						{
 							largest_age_command_type = command_array[largest_age_index].command / 10;
 							if (debug)
 								cout << "Posting to EV1" << endl;
@@ -269,7 +279,7 @@ int main()
 								cout << "Posting to EV2" << endl;
 							if (largest_age_command_type == DIS_E2)
 								Elevator2.Post(command_array[largest_age_index].command % 10);
-							else 
+							else
 								Elevator2.Post(command_array[largest_age_index].command - 10);
 						}
 						command_array[largest_age_index].valid = 0;
@@ -412,11 +422,18 @@ int main()
 			{
 				// leave in command_array
 			}
+			/* =======  End of Inside Elevator  ======= */
 		}
-		/* =======  End of Inside Elevator  ======= */
+		/* =======  End of Command Search  ======= */
+		if (end_sim)
+			break;
 	}
 
 	/* =======  End of Dispatcher  ======= */
+
+	Elevator1Status.~CThread();
+	Elevator2Status.~CThread();
+	ReadPipeline.~CThread();
 
 	r2.Wait();
 

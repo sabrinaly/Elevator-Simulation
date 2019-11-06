@@ -23,7 +23,7 @@ int elevator_floor = 0;
 int elevator_direction = 1; // 1 = up, 0 = down
 int target_floor = 0;
 
-UINT __stdcall Elevator2Move(void* args)
+UINT __stdcall Elevator2Move(void *args)
 {
 	r1.Wait();
 	while (1)
@@ -210,9 +210,9 @@ void stop_elevator(int elevator_direction)
 		EV2_UP_RESET();
 		close_door();
 		//clear floor struct
-		EV2UP_array[target_floor].stop = 0;
-		EV2UP_array[target_floor].passenger_inside = 0;
-		EV2UP_array[target_floor].passenger_outside = 0;
+		EV2UP_array[elevator_floor].stop = 0;
+		EV2UP_array[elevator_floor].passenger_inside = 0;
+		EV2UP_array[elevator_floor].passenger_outside = 0;
 	}
 	else if (elevator_direction == DOWN)
 	{
@@ -222,9 +222,9 @@ void stop_elevator(int elevator_direction)
 		EV2_DW_RESET();
 		close_door();
 		//clear floor struct
-		EV2DOWN_array[target_floor].stop = 0;
-		EV2DOWN_array[target_floor].passenger_inside = 0;
-		EV2DOWN_array[target_floor].passenger_outside = 0;
+		EV2DOWN_array[elevator_floor].stop = 0;
+		EV2DOWN_array[elevator_floor].passenger_inside = 0;
+		EV2DOWN_array[elevator_floor].passenger_outside = 0;
 	}
 }
 

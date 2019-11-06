@@ -135,6 +135,10 @@ int main()
 
 			if (input1 == '-' && input2 == '1')
 			{
+				cursor.Wait();
+				MOVE_CURSOR(0, 0);
+				cout << "Received command: " << input1 << input2 << endl;
+				cursor.Signal();
 				while (1)
 				{
 					if (TEST_FOR_KEYBOARD())
@@ -155,6 +159,10 @@ int main()
 
 			if (input1 == '-' && input2 == '2')
 			{
+				cursor.Wait();
+				MOVE_CURSOR(0, 0);
+				cout << "Received command: " << input1 << input2 << endl;
+				cursor.Signal();
 				while (1)
 				{
 					if (TEST_FOR_KEYBOARD())
