@@ -125,6 +125,25 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 		pipelineMutex.Wait();
 		dispatcherPipe.Write(&passengerstruct);
 		pipelineMutex.Signal();
+
+		if (passengerstruct.x == 'u')
+		{
+			int input2_int = passengerstruct.y - '0';
+			if (input2_int <= 9 && input2_int >= 0)
+			{
+				passengers_waiting_up[input2_int]++;
+				print_increment();
+			}
+		}
+		else if (passengerstruct.x == 'd')
+		{
+			int input2_int = passengerstruct.y - '0';
+			if (input2_int <= 9 && input2_int >= 0)
+			{
+				passengers_waiting_down[input2_int]++;
+				print_increment();
+			}
+		}
 		cursor.Wait();
 		MOVE_CURSOR(0, 0);
 		cout << "Received passenger command: " << passengerstruct.x << passengerstruct.y << endl;
@@ -168,11 +187,52 @@ int main()
 			pipelineMutex.Signal();
 
 			if (input1 == 'd' && input2 == '+') {
+				passengers_waiting_up[0] = 0;
+				passengers_waiting_up[1] = 0;
+				passengers_waiting_up[2] = 0;
+				passengers_waiting_up[3] = 0;
+				passengers_waiting_up[4] = 0;
+				passengers_waiting_up[5] = 0;
+				passengers_waiting_up[6] = 0;
+				passengers_waiting_up[7] = 0;
+				passengers_waiting_up[8] = 0;
+				passengers_waiting_up[9] = 0;
+				passengers_waiting_down[0] = 0;
+				passengers_waiting_down[1] = 0;
+				passengers_waiting_down[2] = 0;
+				passengers_waiting_down[3] = 0;
+				passengers_waiting_down[4] = 0;
+				passengers_waiting_down[5] = 0;
+				passengers_waiting_down[6] = 0;
+				passengers_waiting_down[7] = 0;
+				passengers_waiting_down[8] = 0;
+				passengers_waiting_down[9] = 0;
+
 				p1.Resume();
 				Sleep(1000);
 				p2.Resume();
 			}
 			else if (input1 == 'd' && input2 == '-') {
+				passengers_waiting_up[0] = 0;
+				passengers_waiting_up[1] = 0;
+				passengers_waiting_up[2] = 0;
+				passengers_waiting_up[3] = 0;
+				passengers_waiting_up[4] = 0;
+				passengers_waiting_up[5] = 0;
+				passengers_waiting_up[6] = 0;
+				passengers_waiting_up[7] = 0;
+				passengers_waiting_up[8] = 0;
+				passengers_waiting_up[9] = 0;
+				passengers_waiting_down[0] = 0;
+				passengers_waiting_down[1] = 0;
+				passengers_waiting_down[2] = 0;
+				passengers_waiting_down[3] = 0;
+				passengers_waiting_down[4] = 0;
+				passengers_waiting_down[5] = 0;
+				passengers_waiting_down[6] = 0;
+				passengers_waiting_down[7] = 0;
+				passengers_waiting_down[8] = 0;
+				passengers_waiting_down[9] = 0;
 				p1.~Passengers();
 				p2.~Passengers();
 			}

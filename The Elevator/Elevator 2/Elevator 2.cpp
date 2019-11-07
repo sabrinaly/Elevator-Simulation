@@ -252,6 +252,7 @@ void stop_elevator(int elevator_direction)
 		EV2UP_array[elevator_floor].stop = 0;
 		EV2UP_array[elevator_floor].passenger_inside = 0;
 		EV2UP_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 	else if (elevator_direction == DOWN)
 	{
@@ -267,6 +268,7 @@ void stop_elevator(int elevator_direction)
 		EV2DOWN_array[elevator_floor].stop = 0;
 		EV2DOWN_array[elevator_floor].passenger_inside = 0;
 		EV2DOWN_array[elevator_floor].passenger_outside = 0;
+		update_status();
 	}
 }
 
@@ -344,6 +346,8 @@ void clear_floor_array()
 	}
 	// if fault or changing mode, clear passengers from inside 
 	EV_passenger_count = 0;
+	req_direction = 0;
+	changed_floor = 0;
 	update_status();
 }
 

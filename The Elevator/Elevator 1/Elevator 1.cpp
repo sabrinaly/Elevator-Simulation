@@ -354,6 +354,8 @@ void clear_floor_array()
 	}
 	// if fault or changing mode, clear passengers from inside 
 	EV_passenger_count = 0;
+	req_direction = 0;
+	changed_floor = 0;
 	update_status();
 }
 
