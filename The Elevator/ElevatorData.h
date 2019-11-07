@@ -114,6 +114,8 @@ struct elevator_status
 	int passenger_count = 0;
 	int door = 0;
 	int fault = 0;
+	int changed_floor = 0;
+	int req_direction = 0;
 	UP_struct UP_array;
 	DOWN_struct DOWN_array;
 };
