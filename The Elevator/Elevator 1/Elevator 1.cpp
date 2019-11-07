@@ -25,6 +25,8 @@ int target_floor = 0;
 int end_sim = 0;
 int done = 0;
 int fault = 0;
+int req_direction = 0;
+int changed_floor = 0;
 
 UINT __stdcall Elevator1Move(void *args)
 {
@@ -42,8 +44,9 @@ UINT __stdcall Elevator1Move(void *args)
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor++;
-			//elevator_direction = UP;
+			changed_floor = 1;
 			update_status();
+			changed_floor = 0;
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
 		while (elevator_floor > target_floor)
@@ -55,7 +58,9 @@ UINT __stdcall Elevator1Move(void *args)
 			}
 			Sleep(MOVE_DELAY);
 			elevator_floor--;
+			changed_floor = 1;
 			update_status();
+			changed_floor = 0;
 		}
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
 		if (elevator_floor == target_floor)
@@ -109,6 +114,7 @@ int main()
 		Message = Elevator1Mailbox.GetMessage();
 		int command_type = Message / 10;
 		int req_floor = Message % 10;
+		req_direction = command_type;
 
 		/**================================================== *
 		 * ==========  Section Populate Elevator Array  ========== *
@@ -317,7 +323,7 @@ void update_status()
 	DOWN_array.s8 = EV1DOWN_array[8];
 	DOWN_array.s9 = EV1DOWN_array[9];
 
-	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, UP_array, DOWN_array};
+	status = {elevator_floor, elevator_direction, target_floor, EV_passenger_count, door1, fault, changed_floor, req_direction, UP_array, DOWN_array};
 	Elevator1Status.Update_Status(status);
 }
 
