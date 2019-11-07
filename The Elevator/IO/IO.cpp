@@ -13,8 +13,18 @@ void print_door(int);
 void print_elevator_base();
 void print_elevator_move(int, int, int);
 
+struct passenger_struct
+{
+	Passengers *passenger;
+	int valid = 0;
+};
+
+int create_pass_flag = 0;
+
 command passengerstruct;
 command pipeline1struct;
+
+passenger_struct passenger_array[NUM_PASSENGERS];
 
 elevator_status E1_status;
 elevator_status E2_status;
@@ -115,11 +125,54 @@ UINT __stdcall ReadPassengerPipeline(void *args)
 	return 0;
 }
 
+UINT __stdcall CreatePassenger(void *args)
+{
+	int passenger_count = 0;
+	while (1)
+	{
+		while (create_pass_flag == 1)
+		{
+
+			//find space in array
+			for (int i = 0; i < NUM_PASSENGERS; i++)
+			{
+				if (passenger_array[i].valid == 0 && passenger_count <= PASSENGER_COUNT)
+				{
+					passenger_array[i].passenger = new Passengers;
+					passenger_array[i].passenger->Resume();
+					passenger_array[i].valid = 1;
+					passenger_count++;
+					break;
+				}
+			}
+			random_device rd;
+			mt19937 eng(rd());
+			uniform_int_distribution<> distr(3100, 3500);
+			Sleep(distr(eng));
+		}
+
+		if (create_pass_flag == 2)
+		{
+
+			for (int i = 0; i < NUM_PASSENGERS; i++)
+			{
+				if (passenger_array[i].valid == 1)
+				{
+					delete passenger_array[i].passenger;
+					passenger_array[i].valid = 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 int main()
 {
 	CThread Elevator1(IOStatusElevator1, ACTIVE, NULL);
 	CThread Elevator2(IOStatusElevator2, ACTIVE, NULL);
 	CThread Passenger(ReadPassengerPipeline, ACTIVE, NULL);
+	CThread InitializePassenger(CreatePassenger, ACTIVE, NULL);
 	CTypedPipe<command> dispatcherPipe("DispatcherPipeline", 1024);
 
 	r1.Wait();
@@ -146,14 +199,13 @@ int main()
 			dispatcherPipe.Write(&pipeline1struct);
 			pipelineMutex.Signal();
 
-			if (input1 == 'd' && input2 == '+') {
-				p1.Resume();
-				Sleep(1000);
-				p2.Resume();
+			if (input1 == 'd' && input2 == '+')
+			{
+				create_pass_flag = 1;
 			}
-			else if (input1 == 'd' && input2 == '-') {
-				p1.~Passengers();
-				p2.~Passengers();
+			else if (input1 == 'd' && input2 == '-')
+			{
+				create_pass_flag = 2;
 			}
 
 			cursor.Wait();
@@ -176,14 +228,14 @@ int main()
 		}
 	}
 
-	Elevator1.~CThread();
+	/* Elevator1.~CThread();
 	Elevator2.~CThread();
 	Passenger.~CThread();
 
 	Elevator1.WaitForThread();
 	Elevator2.WaitForThread();
 	Passenger.WaitForThread();
-
+ */
 	cursor.Wait();
 	CLEAR_SCREEN();
 	MOVE_CURSOR(0, 0);

@@ -25,15 +25,16 @@ int target_floor = 0;
 int end_sim = 0;
 int done = 0;
 int fault = 0;
+int destroy = 0;
 
 UINT __stdcall Elevator1Move(void *args)
 {
 	r1.Wait();
-	while (1)
+	while (!destroy)
 	{
 
 		/*********  ELEVATOR GOING UP  **********/
-		while (elevator_floor < target_floor)
+		while (elevator_floor < target_floor && !destroy)
 		{
 			elevator_direction = UP;
 			if (EV1UP_array[elevator_floor].stop)
@@ -46,7 +47,7 @@ UINT __stdcall Elevator1Move(void *args)
 			update_status();
 		}
 		/*********  ELEVATOR GOING DOWN  **********/
-		while (elevator_floor > target_floor)
+		while (elevator_floor > target_floor && !destroy)
 		{
 			elevator_direction = DOWN;
 			if (EV1DOWN_array[elevator_floor].stop)
@@ -60,17 +61,20 @@ UINT __stdcall Elevator1Move(void *args)
 		/*********  ELEVATOR REACHED TARGET FLOOR  **********/
 		if (elevator_floor == target_floor)
 		{
-			if (check_empty_array() == 0)
+			if (end_sim)
+			{
+				if (elevator_floor == 0)
+				{
+					cout << "Reached here" << endl;
+					open_door();
+					EV1SimFinished.Signal();
+					EV1SimFinished.Signal();
+				}
+			}
+			else if (check_empty_array() == 0)
 			{
 				while (check_empty_array() == 0)
 				{
-					//if floor array is empty and it is end of sim, open_door
-					if (end_sim && elevator_floor == 0)
-					{
-						cout << "Reached here" << endl;
-						open_door();
-						done = 1;
-					}
 				}
 			}
 			else if (elevator_direction == UP)
@@ -127,10 +131,11 @@ int main()
 		}
 		else if (Message == END_SIM)
 		{
-			clear_floor_array();
 			target_floor = 0;
 			end_sim = 1;
 			fault = 1;
+			clear_floor_array();
+			EV1DOWN_array[0].stop = 1;
 			cout << "Received END_SIM" << endl;
 			update_status();
 			break;
@@ -224,14 +229,13 @@ int main()
 		update_status();
 	}
 	/* =======  End of Listen for Commands  ======= */
-	while (done == 0)
-	{
-		//do nothing
-	}
+	EV1SimFinished.Wait();
+
+	destroy = 1;
 
 	cout << "End of Simulation" << endl;
-	t1.~CThread();
-	t1.WaitForThread();
+	/* t1.~CThread();
+	t1.WaitForThread(); */
 
 	cout << "Waiting for r2" << endl;
 	r2.Wait();
@@ -346,7 +350,7 @@ void clear_floor_array()
 		EV1DOWN_array[i].passenger_inside = 0;
 		EV1DOWN_array[i].passenger_outside = 0;
 	}
-	// if fault or changing mode, clear passengers from inside 
+	// if fault or changing mode, clear passengers from inside
 	EV_passenger_count = 0;
 	update_status();
 }

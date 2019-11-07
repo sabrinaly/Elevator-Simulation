@@ -45,6 +45,9 @@
 #define DIS_OUT_UP 2
 #define DIS_OUT_DOWN 3
 
+#define NUM_PASSENGERS 30
+#define PASSENGER_COUNT 8
+
 //Faults Defines
 #define START_PASSENGERS 93
 #define END_PASSENGERS 94
@@ -143,6 +146,9 @@ CMailbox EndSimMailbox;
 
 CDataPool *Elevator1StatusDataPool;
 CDataPool *Elevator2StatusDataPool;
+
+CSemaphore EV1SimFinished("EV1SimFinished", 0, 2); // semaphore with initial value 0 and max value 1
+CSemaphore EV2SimFinished("EV2SimFinished", 0, 2); // semaphore with initial value 0 and max value 1
 
 // ---- Semaphores ---- //
 // Elevator 1
